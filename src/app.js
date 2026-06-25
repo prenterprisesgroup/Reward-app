@@ -1,0 +1,67 @@
+const cors = require("cors");
+const express = require("express");
+const helmet = require("helmet");
+const mongoose = require("mongoose");
+const morgan = require("morgan");
+
+const adminRoutes = require("./routes/admin.routes");
+const authRoutes = require("./routes/auth.routes");
+const authOtpRoutes = require("./routes/auth-otp.routes");
+const healthRoutes = require("./routes/health.routes");
+const systemRoutes = require("./routes/system.routes");
+const adminUserRoutes = require("./routes/admin-user.routes");
+const companyRoutes = require("./routes/company.routes");
+const appVersionRoutes = require("./routes/app-version.routes");
+const analyticsRoutes = require("./routes/analytics.routes");
+const notFound = require("./middleware/not-found");
+const errorHandler = require("./middleware/error-handler");
+
+const app = express();
+
+const allowedOrigins = (process.env.CLIENT_ORIGIN || "*")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(helmet());
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: !allowedOrigins.includes("*"),
+  })
+);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+if (process.env.NODE_ENV !== "test") {
+  app.use(morgan("dev"));
+}
+
+app.use("/health", healthRoutes);
+app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/auth-otp", authOtpRoutes);
+app.use("/api/v1/admin-users", adminUserRoutes);
+app.use("/api/v1/companies", companyRoutes);
+app.use("/api/v1/system", systemRoutes);
+app.use("/api/v1/app", appVersionRoutes);
+app.use("/api/v1/analytics", analyticsRoutes);
+
+app.get("/", (req, res) => {
+  res.json({
+    message: "Reward app API is running",
+    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+  });
+});
+
+app.use(notFound);
+app.use(errorHandler);
+
+module.exports = app;

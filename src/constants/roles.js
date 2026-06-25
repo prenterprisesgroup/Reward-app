@@ -1,0 +1,13 @@
+const ROLES = Object.freeze({
+  SUPER_ADMIN: "SUPER_ADMIN",
+  COMPANY_ADMIN: "COMPANY_ADMIN",
+  COMPANY_STAFF: "COMPANY_STAFF",
+  WORKER: "WORKER",
+});
+
+const COMPANY_ROLES = Object.freeze([ROLES.COMPANY_ADMIN, ROLES.COMPANY_STAFF]);
+
+module.exports = {
+  ROLES,
+  COMPANY_ROLES,
+};

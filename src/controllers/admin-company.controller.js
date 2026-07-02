@@ -158,9 +158,71 @@ async function createCompanyAdmin(req, res, next) {
   }
 }
 
+async function approveCompany(req, res, next) {
+  try {
+    const { id } = req.params;
+    assertObjectId(id, "Company id");
+
+    const company = await Company.findById(id);
+
+    if (!company) {
+      throw new HttpError(404, "Company not found");
+    }
+
+    if (company.status !== COMPANY_STATUS.PENDING) {
+      throw new HttpError(400, "Company is not in pending status");
+    }
+
+    company.status = COMPANY_STATUS.ACTIVE;
+    await company.save();
+
+    // Activate the company admin
+    await User.updateMany(
+      { company: company._id, role: ROLES.COMPANY_ADMIN },
+      { isActive: true }
+    );
+
+    res.json({
+      company: presentCompany(company),
+      message: "Company approved successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function rejectCompany(req, res, next) {
+  try {
+    const { id } = req.params;
+    assertObjectId(id, "Company id");
+
+    const company = await Company.findById(id);
+
+    if (!company) {
+      throw new HttpError(404, "Company not found");
+    }
+
+    if (company.status !== COMPANY_STATUS.PENDING) {
+      throw new HttpError(400, "Company is not in pending status");
+    }
+
+    company.status = COMPANY_STATUS.REJECTED;
+    await company.save();
+
+    res.json({
+      company: presentCompany(company),
+      message: "Company rejected successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   createCompany,
   createCompanyAdmin,
   getCompany,
   listCompanies,
+  approveCompany,
+  rejectCompany,
 };

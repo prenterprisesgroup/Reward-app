@@ -4,6 +4,7 @@ const {
   getMe,
   login,
   registerWorker,
+  registerCompany,
 } = require("../controllers/auth.controller");
 const { logout } = require("../controllers/auth-logout.controller");
 const { protect } = require("../middleware/auth");
@@ -11,6 +12,7 @@ const { protect } = require("../middleware/auth");
 const router = express.Router();
 
 router.post("/register-worker", registerWorker);
+router.post("/register-company", registerCompany);
 router.post("/login", login);
 router.post("/logout", protect, logout);
 router.get("/me", protect, getMe);

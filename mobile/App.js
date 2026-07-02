@@ -1,11 +1,5 @@
-import React from 'react';
-import { AuthProvider } from './src/contexts/AuthContext';
-import AppNavigator from './src/navigation/AppNavigator';
+import { Stack } from 'expo-router';
 
 export default function App() {
-  return (
-    <AuthProvider>
-      <AppNavigator />
-    </AuthProvider>
-  );
+  return <Stack />;
 }

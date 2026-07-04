@@ -8,6 +8,7 @@ function presentUser(user) {
     company: user.company,
     upiId: user.upiId,
     walletBalance: user.walletBalance,
+    profilePhotoUrl: user.profilePhotoUrl,
     isActive: user.isActive,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,

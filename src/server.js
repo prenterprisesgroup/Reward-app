@@ -9,8 +9,8 @@ async function startServer() {
   try {
     await connectDatabase();
 
-    app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
+    app.listen(port, '0.0.0.0', () => {
+      console.log(`Server running on port ${port} and listening on 0.0.0.0`);
     });
   } catch (error) {
     console.error("Failed to start server:", error.message);

@@ -1,5 +1,6 @@
 const User = require('../models/user.model');
 const { uploadToCloudinary } = require('../middleware/upload');
+const presentUser = require('../utils/user-presenter');
 
 // Upload profile photo
 const uploadProfilePhoto = async (req, res) => {
@@ -13,22 +14,17 @@ const uploadProfilePhoto = async (req, res) => {
 
     // Update user's profile photo URL
     const user = await User.findByIdAndUpdate(
-      req.user.id,
+      req.user._id || req.user.id,
       { profilePhotoUrl: photoUrl },
       { new: true, runValidators: true }
-    ).select('-passwordHash -otpCode -otpExpiresAt');
+    );
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     res.json({
-      message: 'Profile photo uploaded successfully',
-      user: {
-        id: user._id,
-        name: user.name,
-        profilePhotoUrl: user.profilePhotoUrl
-      }
+      user: presentUser(user),
     });
   } catch (error) {
     console.error('Error uploading profile photo:', error);
@@ -40,22 +36,17 @@ const uploadProfilePhoto = async (req, res) => {
 const removeProfilePhoto = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(
-      req.user.id,
+      req.user._id || req.user.id,
       { profilePhotoUrl: null },
       { new: true }
-    ).select('-passwordHash -otpCode -otpExpiresAt');
+    );
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     res.json({
-      message: 'Profile photo removed successfully',
-      user: {
-        id: user._id,
-        name: user.name,
-        profilePhotoUrl: null
-      }
+      user: presentUser(user),
     });
   } catch (error) {
     console.error('Error removing profile photo:', error);

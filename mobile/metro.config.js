@@ -7,6 +7,6 @@ config.maxWorkers = 1;
 config.resetCache = true;
 
 // Add support for react-native-reanimated
-config.resolver.sourceExts = [...config.resolver.sourceExts, 'jsx', 'js', 'ts', 'tsx'];
+config.resolver.sourceExts = [...new Set([...config.resolver.sourceExts, 'jsx', 'js', 'ts', 'tsx', 'mjs', 'cjs'])];
 
 module.exports = config;

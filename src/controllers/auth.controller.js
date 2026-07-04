@@ -98,6 +98,63 @@ async function getMe(req, res) {
   });
 }
 
+async function updateMe(req, res, next) {
+  try {
+    const { name, phone, email } = req.body;
+    const updateData = {};
+
+    if (name !== undefined) {
+      updateData.name = name;
+    }
+
+    if (phone !== undefined) {
+      if (!/^\d{10}$/.test(phone)) {
+        throw new HttpError(400, "Phone number must be exactly 10 digits");
+      }
+      updateData.phone = phone;
+    }
+
+    if (email !== undefined) {
+      if (email && !/^\S+@\S+\.\S+$/.test(email)) {
+        throw new HttpError(400, "Invalid email format");
+      }
+      updateData.email = email ? email.toLowerCase() : null;
+    }
+
+    // Check duplicates if phone or email is changed
+    if (updateData.phone || updateData.email) {
+      const orConditions = [];
+      if (updateData.phone) orConditions.push({ phone: updateData.phone });
+      if (updateData.email) orConditions.push({ email: updateData.email });
+
+      const existingUser = await User.findOne({
+        _id: { $ne: req.user._id },
+        $or: orConditions
+      });
+
+      if (existingUser) {
+        throw new HttpError(409, "User with this phone or email already exists");
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+
+    res.json({
+      user: presentUser(user),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function registerCompany(req, res, next) {
   try {
     const {
@@ -195,6 +252,7 @@ async function registerCompany(req, res, next) {
 
 module.exports = {
   getMe,
+  updateMe,
   login,
   registerWorker,
   registerCompany,

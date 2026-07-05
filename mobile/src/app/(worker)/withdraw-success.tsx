@@ -77,7 +77,8 @@ export default function WithdrawSuccessScreen() {
       <Animated.ScrollView 
         bounces={false} 
         showsVerticalScrollIndicator={false} 
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 40, paddingBottom: Math.max(insets.bottom + 12, 24) }, fadeStyle]}
+        style={fadeStyle}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 40, paddingBottom: Math.max(insets.bottom + 12, 24) }]}
       >
         {/* Success Badge */}
         <View style={styles.successBadgeContainer}>
@@ -256,6 +257,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
     letterSpacing: -1,
+    lineHeight: 56,
+    paddingVertical: 8,
   },
   detailCard: {
     backgroundColor: localTheme.colors.card,

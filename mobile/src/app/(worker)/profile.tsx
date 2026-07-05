@@ -5,6 +5,7 @@ import { Typography } from '../../components/common/Typography';
 import { Card } from '../../components/cards/Card';
 import { ArrowLeft, Bell, ChevronRight, Edit2, Phone, Mail, Building, Calendar, Shield, CreditCard, LogOut, Settings, Globe, Lock, HelpCircle, Info, FileText, MessageSquare } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { BottomNavigation } from '../../components/navigation/BottomNavigation';
 import { theme } from '../../constants/theme';
 import { useUserQuery } from '../../hooks/useUserQuery';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -219,6 +220,9 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </Card>
       </ScrollView>
+
+      {/* Unified Bottom Navigation */}
+      <BottomNavigation />
     </SafeAreaView>
   );
 }

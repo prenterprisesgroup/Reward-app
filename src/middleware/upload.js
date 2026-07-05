@@ -1,5 +1,6 @@
 const multer = require('multer');
 const cloudinary = require('../config/cloudinary');
+const fileType = require('file-type');
 
 const storage = multer.memoryStorage();
 
@@ -28,6 +29,12 @@ const uploadToCloudinary = async (file, folder = 'reward-app/profile-photos') =>
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2, 8);
     const publicId = `${timestamp}-${randomString}`;
+
+    // Verify magic number using file-type
+    const type = await fileType.fromBuffer(file.buffer);
+    if (!type || !['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(type.mime)) {
+      throw new Error('Spoofed file detected. Invalid binary signature.');
+    }
 
     const result = await cloudinary.uploader.upload(file.buffer, {
       folder: folder,

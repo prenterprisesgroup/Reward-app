@@ -7,4 +7,6 @@ module.exports = {
   WithdrawalRequest: require("./withdrawal-request.model"),
   AppVersion: require("./app-version.model"),
   TokenBlacklist: require("./token-blacklist.model"),
+  AuditLog: require("./audit-log.model"),
+  IdempotencyKey: require("./idempotency-key.model"),
 };

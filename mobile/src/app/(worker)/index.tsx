@@ -48,7 +48,7 @@ export default function WorkerHomeScreen() {
   }
 
   const walletData = wallet as WalletData;
-  const recentRewards = Array.isArray(walletData?.recentRewards) ? walletData.recentRewards : [];
+  const recentRewards = Array.isArray(walletData?.transactions) ? walletData.transactions : [];
   const pendingWithdrawals = Array.isArray(walletData?.pendingWithdrawals) ? walletData.pendingWithdrawals : [];
 
   const generateChartData = (rewards: any[]) => {
@@ -118,7 +118,7 @@ export default function WorkerHomeScreen() {
         <View style={styles.balanceCard}>
           <View style={styles.balanceContentWrapper}>
             <Typography style={styles.balanceLabel}>Current Reward Balance</Typography>
-            <Typography style={styles.balanceValue}>₹{walletData?.balance || 0}</Typography>
+            <Typography style={styles.balanceValue}>₹{walletData?.walletBalance || 0}</Typography>
             
             <View style={styles.earningsRow}>
               <View style={styles.earningsBadge}>
@@ -206,21 +206,21 @@ export default function WorkerHomeScreen() {
                 </View>
               ) : (
                 recentRewards.map((reward, index) => (
-                  <View key={reward.id} style={[styles.rewardItem, index === recentRewards.length - 1 ? { borderBottomWidth: 0 } : undefined]}>
+                  <View key={reward.id || index} style={[styles.rewardItem, index === recentRewards.length - 1 ? { borderBottomWidth: 0 } : undefined]}>
                     <View style={[styles.companyLogo, { backgroundColor: theme.colors.borderLight, justifyContent: 'center', alignItems: 'center' }]}>
                       <Typography style={{ fontSize: 12, fontWeight: 'bold', color: theme.colors.textSecondary }}>
-                        {reward.companyName.charAt(0)}
+                        {(reward.companyName || reward.description || 'R').charAt(0).toUpperCase()}
                       </Typography>
                     </View>
                     <View style={styles.rewardInfo}>
-                      <Typography style={styles.companyName} numberOfLines={1}>{reward.companyName}</Typography>
-                      <Typography style={styles.rewardTime}>{reward.createdAt}</Typography>
+                      <Typography style={styles.companyName} numberOfLines={1}>{reward.companyName || reward.description || 'Reward'}</Typography>
+                      <Typography style={styles.rewardTime}>{reward.createdAt ? new Date(reward.createdAt).toLocaleDateString() : 'Recent'}</Typography>
                     </View>
                     <View style={styles.rewardRight}>
-                      <Typography style={styles.rewardAmount}>+₹{reward.amount}</Typography>
+                      <Typography style={styles.rewardAmount}>+₹{reward.amount || 0}</Typography>
                       <View style={[styles.statusBadge, reward.status === 'PENDING' ? { backgroundColor: theme.colors.warningBackground } : undefined]}>
                         <Typography style={[styles.statusText, reward.status === 'PENDING' ? { color: theme.colors.warning } : undefined]}>
-                          {reward.status.charAt(0) + reward.status.slice(1).toLowerCase()}
+                          {reward.status ? reward.status.charAt(0).toUpperCase() + reward.status.slice(1).toLowerCase() : 'Completed'}
                         </Typography>
                       </View>
                     </View>

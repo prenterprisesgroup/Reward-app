@@ -4,22 +4,44 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Typography } from '../common/Typography';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
-import { useRouter, usePathname } from 'expo-router';
+import { useRouter, useSegments } from 'expo-router';
 
-export function BottomNavigation() {
+interface BottomNavigationProps {
+  isAdmin?: boolean;
+}
+
+export function BottomNavigation({ isAdmin = false }: BottomNavigationProps) {
   const router = useRouter();
-  const pathname = usePathname();
+  const segments = useSegments();
   const insets = useSafeAreaInsets();
   const bottomSpacing = Math.max(insets.bottom + 12, 24);
 
-  // Determine active route based on pathname
-  let activeRoute = 'home';
-  if (pathname.includes('/wallet')) {
-    activeRoute = 'wallet';
-  } else if (pathname.includes('/scan')) {
-    activeRoute = 'scan';
-  } else if (pathname.includes('/profile')) {
-    activeRoute = 'profile';
+  // Safely find the current route from segments
+  // segments will look like ['(admin)', 'qr-batches'] or ['(worker)', 'scan'] or just ['qr-batches'] depending on expo router versions
+  const currentSegment = segments.length > 0 ? segments[segments.length - 1] : '';
+
+  // Determine active route
+  let activeRoute = isAdmin ? 'dashboard' : 'home';
+  if (isAdmin) {
+    if (currentSegment === 'qr-batches') {
+      activeRoute = 'qr-batches';
+    } else if (currentSegment === 'payments') {
+      activeRoute = 'payments';
+    } else if (currentSegment === 'profile') {
+      activeRoute = 'profile';
+    } else if (currentSegment === 'index' || currentSegment === '(admin)') {
+      activeRoute = 'dashboard';
+    }
+  } else {
+    if (currentSegment === 'wallet') {
+      activeRoute = 'wallet';
+    } else if (currentSegment === 'scan') {
+      activeRoute = 'scan';
+    } else if (currentSegment === 'profile') {
+      activeRoute = 'profile';
+    } else if (currentSegment === 'index' || currentSegment === '(worker)') {
+      activeRoute = 'home';
+    }
   }
 
   const renderNavItem = (
@@ -56,21 +78,37 @@ export function BottomNavigation() {
   return (
     <View style={[styles.bottomNavWrapper, { bottom: bottomSpacing }]}>
       <View style={styles.bottomNavContainer}>
-        {renderNavItem('home', 'Home', Feather, 'home', () => {
-          if (activeRoute !== 'home') router.push('/(worker)');
-        })}
-
-        {renderNavItem('scan', 'Scan', MaterialCommunityIcons, 'line-scan', () => {
-          if (activeRoute !== 'scan') router.push('/(worker)/scan');
-        })}
-
-        {renderNavItem('wallet', 'Wallet', MaterialCommunityIcons, 'wallet-outline', () => {
-          if (activeRoute !== 'wallet') router.push('/(worker)/wallet');
-        })}
-
-        {renderNavItem('profile', 'Profile', Feather, 'user', () => {
-          if (activeRoute !== 'profile') router.push('/(worker)/profile');
-        }, true /* Example badge on profile */)}
+        {isAdmin ? (
+          <>
+            {renderNavItem('dashboard', 'Dashboard', MaterialCommunityIcons, 'view-dashboard', () => {
+              if (activeRoute !== 'dashboard') router.push('/(admin)');
+            })}
+            {renderNavItem('qr-batches', 'QR Batches', MaterialCommunityIcons, 'qrcode-scan', () => {
+              if (activeRoute !== 'qr-batches') router.push('/(admin)/qr-batches');
+            })}
+            {renderNavItem('payments', 'Payments', MaterialCommunityIcons, 'wallet-outline', () => {
+              if (activeRoute !== 'payments') router.push('/(admin)/payments');
+            })}
+            {renderNavItem('profile', 'Profile', Feather, 'user', () => {
+              if (activeRoute !== 'profile') router.push('/(admin)/profile');
+            })}
+          </>
+        ) : (
+          <>
+            {renderNavItem('home', 'Home', Feather, 'home', () => {
+              if (activeRoute !== 'home') router.push('/(worker)');
+            })}
+            {renderNavItem('scan', 'Scan', MaterialCommunityIcons, 'line-scan', () => {
+              if (activeRoute !== 'scan') router.push('/(worker)/scan');
+            })}
+            {renderNavItem('wallet', 'Wallet', MaterialCommunityIcons, 'wallet-outline', () => {
+              if (activeRoute !== 'wallet') router.push('/(worker)/wallet');
+            })}
+            {renderNavItem('profile', 'Profile', Feather, 'user', () => {
+              if (activeRoute !== 'profile') router.push('/(worker)/profile');
+            }, true /* Example badge on profile */)}
+          </>
+        )}
       </View>
     </View>
   );

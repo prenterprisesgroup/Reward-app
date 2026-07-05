@@ -73,8 +73,12 @@ export const Toast = React.memo(({
     opacity: opacity.value,
   }));
 
-  // Render even if invisible so animation can run, but return null if fully hidden
-  if (!visible && opacity.value === 0) return null;
+  // Avoid reading shared value during render to prevent Reanimated warnings.
+  // The component is wrapped in pointerEvents="none" when invisible anyway.
+  if (!visible) {
+    // We could return null safely if we didn't want exit animations,
+    // but to support exit animations we must keep it mounted.
+  }
 
   const { icon: Icon, color, bgColor, borderColor } = getToastConfig(type);
 

@@ -149,7 +149,7 @@ export default function WorkerScanQRScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: bottomSpacing + 60 }}>
       {/* Top Header */}
       <View style={[styles.header, { paddingHorizontal: 24, paddingTop: 16, zIndex: 10 }]}>
         <TouchableOpacity style={styles.iconBtn} onPress={() => router.back()} hitSlop={hitSlop} accessible={true} accessibilityRole="button" accessibilityLabel="Go back">
@@ -193,7 +193,7 @@ export default function WorkerScanQRScreen() {
             <View style={{ height: 24, justifyContent: 'center' }}><Typography style={styles.balancePillValue}>...</Typography></View>
           ) : (
             <Typography style={styles.balancePillValue}>
-              ₹{isWalletError ? '0' : (walletData?.balance || 0).toLocaleString('en-IN')}
+              ₹{isWalletError ? '0' : (walletData?.walletBalance || 0).toLocaleString('en-IN')}
             </Typography>
           )}
           <View style={styles.balancePillIcon}>
@@ -251,7 +251,7 @@ export default function WorkerScanQRScreen() {
         </View>
 
         {/* Massive Solid White Bottom Sheet */}
-        <ScrollView style={styles.bottomSheetWrapper}>
+        <View style={styles.bottomSheetWrapper}>
           <View style={styles.dragHandle} />
           
           <View style={styles.readySection}>
@@ -316,18 +316,15 @@ export default function WorkerScanQRScreen() {
           </View>
 
           {/* Security Card */}
-          <TouchableOpacity style={styles.securityCard} accessible={true} accessibilityRole="button" hitSlop={hitSlop}>
+          <View style={styles.securityCard}>
             <View style={styles.securityIconBox}>
               <ShieldCheck size={20} color={theme.colors.primary} />
             </View>
-            <View style={styles.readyIconWrapper}>
-              <CheckCircle2 size={32} color={theme.colors.primary} />
+            <View style={styles.securityContent}>
+              <Typography style={styles.securityTitle}>Secure Connection</Typography>
+              <Typography style={styles.securitySubtitle}>Your scans are encrypted end-to-end</Typography>
             </View>
-            <View style={styles.readyTextContainer}>
-              <Typography style={styles.readyTitle}>Scanner Ready</Typography>
-              <Typography style={styles.readySubtitle}>Align QR code within the frame</Typography>
-            </View>
-          </TouchableOpacity>
+          </View>
 
           <View style={styles.divider} />
 
@@ -367,7 +364,8 @@ export default function WorkerScanQRScreen() {
             </View>
 
           </View>
-        </ScrollView>
+        </View>
+      </ScrollView>
 
       <RewardSuccessBottomSheet 
         visible={showSuccessModal}

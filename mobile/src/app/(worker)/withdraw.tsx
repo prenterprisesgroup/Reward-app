@@ -279,6 +279,14 @@ export default function WithdrawRewardsScreen() {
             Once approved, the amount will be transferred to your registered UPI account.
           </Typography>
         </View>
+
+        <View style={[styles.confirmationRow, { marginTop: 8 }]}>
+          <Feather name="lock" size={14} color={theme.colors.textSecondary} />
+          <View style={styles.confirmationTextCol}>
+            <Typography style={styles.confirmationTitle}>Confirmation</Typography>
+            <Typography style={styles.confirmationDesc}>You'll be asked to confirm before the withdrawal request is submitted.</Typography>
+          </View>
+        </View>
       </ScrollView>
 
       {/* 8. Bottom Actions */}
@@ -291,17 +299,9 @@ export default function WithdrawRewardsScreen() {
           style={[styles.withdrawNowBtn, (!isValidAmount || withdrawMutation.isPending) && styles.withdrawNowBtnDisabled]}
         />
         
-        <TouchableOpacity style={styles.cancelBtn} onPress={() => router.back()} disabled={withdrawMutation.isPending}>
+        <TouchableOpacity style={[styles.cancelBtn, { marginBottom: 0 }]} onPress={() => router.back()} disabled={withdrawMutation.isPending}>
           <Typography style={styles.cancelBtnText}>Cancel</Typography>
         </TouchableOpacity>
-
-        <View style={styles.confirmationRow}>
-          <Feather name="lock" size={14} color={theme.colors.textSecondary} />
-          <View style={styles.confirmationTextCol}>
-            <Typography style={styles.confirmationTitle}>Confirmation</Typography>
-            <Typography style={styles.confirmationDesc}>You'll be asked to confirm before the withdrawal request is submitted.</Typography>
-          </View>
-        </View>
       </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

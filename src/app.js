@@ -1,8 +1,22 @@
+const Sentry = require("@sentry/node");
+const { nodeProfilingIntegration } = require("@sentry/profiling-node");
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN || "",
+  integrations: [
+    nodeProfilingIntegration(),
+  ],
+  tracesSampleRate: 1.0,
+  profilesSampleRate: 1.0,
+});
+
 const cors = require("cors");
 const express = require("express");
 const helmet = require("helmet");
 const mongoose = require("mongoose");
-const morgan = require("morgan");
+const mongoSanitize = require("express-mongo-sanitize");
+const pinoHttp = require("pino-http");
+const logger = require("./utils/logger");
 
 const adminRoutes = require("./routes/admin.routes");
 const authRoutes = require("./routes/auth.routes");
@@ -15,6 +29,7 @@ const appVersionRoutes = require("./routes/app-version.routes");
 const analyticsRoutes = require("./routes/analytics.routes");
 const notFound = require("./middleware/not-found");
 const errorHandler = require("./middleware/error-handler");
+const { globalLimiter } = require("./middleware/rate-limiter");
 
 const app = express();
 
@@ -39,10 +54,13 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(mongoSanitize());
+app.use(globalLimiter);
 
-if (process.env.NODE_ENV !== "test") {
-  app.use(morgan("dev"));
-}
+// Sentry request handler must be the first middleware on the app
+Sentry.setupExpressErrorHandler(app);
+
+app.use(pinoHttp({ logger }));
 
 app.use("/health", healthRoutes);
 app.use("/api/v1/admin", adminRoutes);

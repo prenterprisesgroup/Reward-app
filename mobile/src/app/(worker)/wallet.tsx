@@ -8,7 +8,7 @@ import { BottomNavigation } from '../../components/navigation/BottomNavigation';
 import { theme } from '../../constants/theme';
 import { Typography } from '../../components/common/Typography';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useWalletQuery, useWalletBreakdownQuery } from '../../hooks/useWalletQuery';
+import { useWalletQuery } from '../../hooks/useWalletQuery';
 import { ActivityIndicator } from 'react-native';
 
 export default function WalletScreen() {
@@ -17,10 +17,9 @@ export default function WalletScreen() {
   const bottomSpacing = Math.max(insets.bottom + 12, 24);
 
   const { data: walletData, isLoading: isLoadingWallet } = useWalletQuery();
-  const { data: breakdownData, isLoading: isLoadingBreakdown } = useWalletBreakdownQuery();
 
-  const transactions = Array.isArray(walletData?.recentRewards) ? walletData.recentRewards : [];
-  const companies = Array.isArray(breakdownData?.companies) ? breakdownData.companies : [];
+  const transactions = Array.isArray(walletData?.transactions) ? walletData.transactions : [];
+  const companies = Array.isArray(walletData?.companyBalances) ? walletData.companyBalances : [];
 
   const displayTransactions = useMemo(() => {
     return transactions.slice(0, 10);
@@ -79,7 +78,7 @@ export default function WalletScreen() {
             {isLoadingWallet ? (
               <ActivityIndicator size="small" color={theme.colors.primary} style={{ alignSelf: 'flex-start', marginVertical: 12 }} />
             ) : (
-              <Typography style={styles.heroBalance}>₹{(walletData?.balance || 0).toLocaleString('en-IN')}</Typography>
+              <Typography style={styles.heroBalance}>₹{(walletData?.walletBalance || 0).toLocaleString('en-IN')}</Typography>
             )}
             
             <View style={styles.availablePill}>
@@ -102,7 +101,7 @@ export default function WalletScreen() {
           <Typography style={styles.sectionTitle}>Company Balances</Typography>
         </View>
 
-        {isLoadingBreakdown ? (
+        {isLoadingWallet ? (
           <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginVertical: 32 }} />
         ) : companies.length > 0 ? (
           companies.map((company: any) => (

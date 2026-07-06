@@ -31,7 +31,7 @@
     },
     "plugins": [
       "expo-camera",
-      "expo-router"
+      ["expo-router", { "root": "./src/app" }]
     ],
     "extra": {
       "eas": {

@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Superadmin Reward Scanner",
+    "slug": "superadmin-mobile",
+    "scheme": "superadminrewardapp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "We need camera access to scan barcodes"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.anonymous.superadminmobile",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-camera",
+      ["expo-router", { "root": "./src/app" }]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f2750d23-0fc3-4110-bac9-ca5c2f5ee5f2"
+      }
+    },
+    "owner": "aishubamoriya"
+  }
+}

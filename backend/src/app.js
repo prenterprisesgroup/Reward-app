@@ -23,6 +23,7 @@ const authRoutes = require("./routes/auth.routes");
 const authOtpRoutes = require("./routes/auth-otp.routes");
 const healthRoutes = require("./routes/health.routes");
 const systemRoutes = require("./routes/system.routes");
+const companyRoutes = require("./routes/company.routes");
 const adminUserRoutes = require("./routes/admin-user.routes");
 const appVersionRoutes = require("./routes/app-version.routes");
 const analyticsRoutes = require("./routes/analytics.routes");
@@ -67,6 +68,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/auth-otp", authOtpRoutes);
 app.use("/api/v1/admin-users", adminUserRoutes);
 app.use("/api/v1/system", systemRoutes);
+app.use("/api/v1/company", companyRoutes);
 app.use("/api/v1/app", appVersionRoutes);
 app.use("/api/v1/analytics", analyticsRoutes);
 

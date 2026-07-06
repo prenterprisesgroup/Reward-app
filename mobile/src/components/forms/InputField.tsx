@@ -201,6 +201,8 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
     justifyContent: 'center',
     height: '100%',
     position: 'relative',
@@ -213,6 +215,8 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
     fontFamily: theme.typography.family.regular,
     fontSize: theme.typography.size.bodyLarge,
     padding: 0,
@@ -222,11 +226,11 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center',
   },
   leftIconContainer: {
-    marginRight: theme.spacing.sm,
+    marginRight: 4,
     justifyContent: 'center',
   },
   rightIconContainer: {
-    marginLeft: theme.spacing.sm,
+    marginLeft: 4,
     justifyContent: 'center',
   },
   footerTextContainer: {

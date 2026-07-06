@@ -25,4 +25,8 @@ export const authApi = {
     });
     return response.data;
   },
+  changePassword: async (data: any): Promise<{ message: string }> => {
+    const response = await apiClient.patch<{ message: string }>('/auth/change-password', data);
+    return response.data;
+  },
 };

@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, keepPreviousData } from '@tanstack/react-query';
 import { workersApi, WorkersParams } from '../api/workers.api';
 
 export const useWorkersQuery = (params?: Omit<WorkersParams, 'page'>) => {
@@ -12,5 +12,7 @@ export const useWorkersQuery = (params?: Omit<WorkersParams, 'page'>) => {
       return undefined;
     },
     initialPageParam: 1,
+    staleTime: 120 * 1000, // 2 minutes
+    placeholderData: keepPreviousData,
   });
 };

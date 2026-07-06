@@ -250,10 +250,67 @@ async function registerCompany(req, res, next) {
   }
 }
 
+async function changePassword(req, res, next) {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      throw new HttpError(400, "Current password, new password, and confirm password are required");
+    }
+
+    if (newPassword !== confirmPassword) {
+      throw new HttpError(400, "New password and confirm password do not match");
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      throw new HttpError(400, "Password must be at least 8 characters long and include an uppercase letter, lowercase letter, number, and special character");
+    }
+
+    const user = await User.findById(req.user._id).select('+passwordHash');
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+
+    const passwordMatches = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!passwordMatches) {
+      throw new HttpError(401, "Invalid current password");
+    }
+
+    user.passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    
+    // Support token invalidation if tokenVersion is added later, 
+    // or just invalidate current token using TokenBlacklist
+    const authHeader = req.headers.authorization || "";
+    const [scheme, token] = authHeader.split(" ");
+    if (scheme === "Bearer" && token) {
+      const TokenBlacklist = require('../models/token-blacklist.model');
+      const { verifyAuthToken } = require("../utils/auth-token");
+      try {
+        const payload = verifyAuthToken(token);
+        const expiresAt = payload.exp ? new Date(payload.exp * 1000) : new Date(Date.now() + 1000 * 60 * 60 * 24);
+        await TokenBlacklist.create({ token, expiresAt });
+      } catch(err) {
+         // ignore token parse errors during logout
+      }
+    }
+
+    await user.save();
+
+    const { logAudit } = require('../utils/audit');
+    await logAudit(req, 'PASSWORD_CHANGED', user._id, user.company);
+
+    res.json({ message: "Password changed successfully. Please log in again." });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
-  getMe,
-  updateMe,
   login,
   registerWorker,
   registerCompany,
+  getMe,
+  updateMe,
+  changePassword,
 };

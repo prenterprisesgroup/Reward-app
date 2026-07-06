@@ -47,6 +47,10 @@ const companySchema = new mongoose.Schema(
         message: "Logo must be a valid Cloudinary URL"
       }
     },
+    cloudinaryPublicId: {
+      type: String,
+      trim: true,
+    },
     gstNumber: {
       type: String,
       trim: true,
@@ -70,6 +74,32 @@ const companySchema = new mongoose.Schema(
         type: String,
         default: "India",
       },
+    },
+    upiId: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
+    bankAccount: {
+      bankName: { type: String, trim: true },
+      accountNumber: { type: String, trim: true },
+      accountHolderName: { type: String, trim: true },
+      ifscCode: { type: String, trim: true, uppercase: true },
+    },
+    settlementMethod: {
+      type: String,
+      enum: ['AUTOMATIC', 'MANUAL'],
+      default: 'MANUAL',
+    },
+    settings: {
+      language: { type: String, enum: ['en', 'hi'], default: 'en' },
+      notifications: {
+        push: { type: Boolean, default: true },
+        email: { type: Boolean, default: true },
+        sms: { type: Boolean, default: false },
+      },
+      timezone: { type: String, default: 'Asia/Kolkata' },
+      currency: { type: String, default: 'INR' },
     },
     status: {
       type: String,

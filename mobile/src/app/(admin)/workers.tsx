@@ -14,75 +14,7 @@ import { WorkerSkeletonCard } from '../../components/admin/WorkerSkeletonCard';
 import { useWorkersQuery } from '../../hooks/useWorkersQuery';
 import { useToast } from '../../hooks/useToast';
 import { RefreshControl } from 'react-native';
-
-import { useAdminDashboardStatsQuery } from '../../hooks/useAdminDashboardStatsQuery';
-
-const WORKERS_MOCK_DATA: Worker[] = [
-  {
-    _id: 'w1',
-    workerId: 'WR-10248',
-    name: 'Ankit Vishwakarma',
-    phone: '+91 98765 43210',
-    profilePhoto: 'https://i.pravatar.cc/150?u=a042581f4e29026024d',
-    walletBalance: 1250,
-    pendingWithdrawal: 500,
-    totalEarned: 12750,
-    status: WorkerStatus.ACTIVE,
-    verificationStatus: 'VERIFIED',
-  },
-  {
-    _id: 'w2',
-    workerId: 'WR-10249',
-    name: 'Ramesh Yadav',
-    phone: '+91 91234 56789',
-    profilePhoto: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-    walletBalance: 800,
-    pendingWithdrawal: 300,
-    totalEarned: 8600,
-    status: WorkerStatus.ACTIVE,
-    verificationStatus: 'PENDING',
-  },
-  {
-    _id: 'w3',
-    workerId: 'WR-10250',
-    name: 'Suresh Kumar',
-    phone: '+91 99887 66554',
-    profilePhoto: 'https://i.pravatar.cc/150?u=a04258114e29026702d',
-    walletBalance: 2450,
-    pendingWithdrawal: 1000,
-    totalEarned: 15300,
-    status: WorkerStatus.ACTIVE,
-    verificationStatus: 'VERIFIED',
-  },
-  {
-    _id: 'w4',
-    workerId: 'WR-10251',
-    name: 'Vijay Singh',
-    phone: '+91 87654 32109',
-    profilePhoto: 'https://i.pravatar.cc/150?u=a04258114e29026302d',
-    walletBalance: 0,
-    pendingWithdrawal: 0,
-    totalEarned: 2400,
-    status: WorkerStatus.INACTIVE,
-    verificationStatus: 'VERIFIED',
-  },
-  {
-    _id: 'w5',
-    workerId: 'WR-10252',
-    name: 'Deepak Patel',
-    phone: '+91 98980 11223',
-    profilePhoto: 'https://i.pravatar.cc/150?u=a048581f4e29026701d',
-    walletBalance: 950,
-    pendingWithdrawal: 400,
-    totalEarned: 6400,
-    status: WorkerStatus.ACTIVE,
-    verificationStatus: 'VERIFIED',
-  },
-  // Additional mock entries for scrolling
-  { _id: 'w6', workerId: 'WR-10253', name: 'Amit Sharma', phone: '+91 99999 88888', walletBalance: 1500, pendingWithdrawal: 0, totalEarned: 9500, status: WorkerStatus.ACTIVE, verificationStatus: 'VERIFIED' },
-  { _id: 'w7', workerId: 'WR-10254', name: 'Ravi Kumar', phone: '+91 77777 66666', walletBalance: 320, pendingWithdrawal: 0, totalEarned: 1200, status: WorkerStatus.BLOCKED, verificationStatus: 'REJECTED' },
-  { _id: 'w8', workerId: 'WR-10255', name: 'Mohit Ahirwar', phone: '+91 55555 44444', walletBalance: 0, pendingWithdrawal: 0, totalEarned: 0, status: WorkerStatus.INACTIVE, verificationStatus: 'PENDING' },
-];
+import { useDebounce } from '../../hooks/useDebounce';
 
 const FILTERS = [
   { id: 'All', label: 'All', type: 'none' },
@@ -116,6 +48,8 @@ export default function WorkersScreen() {
     rewardsDistributed: dashboardStats?.rewardsDistributed || 0,
   };
 
+  const debouncedSearch = useDebounce(filters.search, 500);
+
   const {
     data,
     isLoading,
@@ -127,7 +61,7 @@ export default function WorkersScreen() {
     fetchNextPage,
     isFetchingNextPage
   } = useWorkersQuery({
-    search: filters.search || undefined,
+    search: debouncedSearch || undefined,
     status: filters.status,
   });
 
@@ -271,7 +205,7 @@ export default function WorkersScreen() {
     <ScreenWrapper>
       <FlatList
         data={isLoading ? [] : workers}
-        keyExtractor={(item, index) => item._id || index.toString()}
+        keyExtractor={(item) => item._id}
         renderItem={renderWorker}
         ListHeaderComponent={renderHeader}
         refreshControl={

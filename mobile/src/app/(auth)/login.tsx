@@ -102,7 +102,7 @@ export default function LoginScreen() {
                     editable={!isPending}
                     leftIcon={
                       <View style={styles.phonePrefixContainer}>
-                        <Typography variant="title" style={{ marginRight: 8, fontSize: 18 }}>🇮🇳</Typography>
+                        <Typography variant="title" style={{ marginRight: 4, fontSize: 18 }}>🇮🇳</Typography>
                         <Typography variant="body" color="textPrimary" style={styles.countryCode}>+91</Typography>
                         <Ionicons name="chevron-down" size={14} color={theme.colors.textSecondary} />
                       </View>
@@ -155,22 +155,7 @@ export default function LoginScreen() {
                 style={styles.loginButton}
               />
 
-              <View style={styles.dividerContainer}>
-                <View style={styles.dividerLine} />
-                <Typography variant="caption" color="textTertiary" style={{ paddingHorizontal: 16 }}>
-                  or continue with
-                </Typography>
-                <View style={styles.dividerLine} />
-              </View>
 
-              <View style={styles.socialContainer}>
-                <Pressable style={styles.googleButton}>
-                  <Image 
-                    source={{ uri: 'https://cdn-icons-png.flaticon.com/512/2991/2991148.png' }}
-                    style={{ width: 24, height: 24 }}
-                  />
-                </Pressable>
-              </View>
 
               <View style={styles.registerContainer}>
                 <Typography variant="body" color="textSecondary">
@@ -254,14 +239,14 @@ const styles = StyleSheet.create({
   phonePrefixContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: theme.spacing.md,
+    paddingRight: 6,
     borderRightWidth: 1,
     borderRightColor: theme.colors.borderLight,
-    marginRight: theme.spacing.md,
+    marginRight: 6,
   },
   countryCode: {
-    marginLeft: theme.spacing.sm,
-    marginRight: theme.spacing.xs,
+    marginLeft: 4,
+    marginRight: 2,
   },
   forgotPasswordContainer: {
     alignItems: 'flex-end',
@@ -271,35 +256,10 @@ const styles = StyleSheet.create({
   loginButton: {
     height: 58,
     borderRadius: 29, // Perfect pill shape
-    marginBottom: theme.spacing.xl,
+    marginBottom: theme.spacing['2xl'],
     backgroundColor: theme.colors.accent, // Sage Green
   },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: theme.spacing.xl,
-    paddingHorizontal: theme.spacing.xl,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: theme.colors.borderLight,
-  },
-  socialContainer: {
-    alignItems: 'center',
-    marginBottom: theme.spacing['2xl'],
-  },
-  googleButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: theme.colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.borderLight,
-    ...theme.shadows.sm,
-  },
+
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',

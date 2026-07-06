@@ -6,6 +6,7 @@ const {
   login,
   registerWorker,
   registerCompany,
+  changePassword,
 } = require("../controllers/auth.controller");
 const { logout } = require("../controllers/auth-logout.controller");
 const { protect } = require("../middleware/auth");
@@ -23,6 +24,7 @@ router.post("/login", loginLimiter, loginValidation, validate, login);
 router.post("/logout", protect, logout);
 router.get("/me", protect, getMe);
 router.patch("/me", protect, updateMeValidation, validate, updateMe);
+router.patch("/change-password", protect, changePassword);
 router.post("/me/photo", protect, profileLimiter, upload.single("image"), uploadProfilePhoto);
 router.delete("/me/photo", protect, removeProfilePhoto);
 

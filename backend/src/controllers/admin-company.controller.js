@@ -11,15 +11,7 @@ const presentUser = require("../utils/user-presenter");
 
 const SALT_ROUNDS = 12;
 
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function assertObjectId(id, label) {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new HttpError(400, `${label} is invalid`);
-  }
-}
+const { escapeRegex, assertObjectId } = require("../utils/validation");
 
 async function createCompany(req, res, next) {
   try {

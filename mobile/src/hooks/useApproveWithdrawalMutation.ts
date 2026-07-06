@@ -1,11 +1,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi, WithdrawalsResponse } from '../api/admin.api';
+import * as Crypto from 'expo-crypto';
 
 export function useApproveWithdrawalMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => adminApi.approveWithdrawal(id),
+    mutationFn: (id: string) => {
+      const idempotencyKey = Crypto.randomUUID();
+      return adminApi.approveWithdrawal(id, idempotencyKey);
+    },
     onMutate: async (id: string) => {
       // Cancel any outgoing refetches so they don't overwrite our optimistic update
       await queryClient.cancelQueries({ queryKey: ['payment-requests', 'PENDING'] });

@@ -109,18 +109,17 @@ export const adminApi = {
     return response.data;
   },
 
-  approveWithdrawal: async (id: string): Promise<any> => {
-    const idempotencyKey = `approve-${id}-${Date.now()}`;
+  approveWithdrawal: async (id: string, idempotencyKey: string): Promise<any> => {
     const response = await apiClient.post(ENDPOINTS.ADMIN.APPROVE_WITHDRAWAL(id), {}, {
       headers: { 'idempotency-key': idempotencyKey }
     });
     return response.data;
   },
 
-  rejectWithdrawal: async (id: string, reason?: string): Promise<any> => {
-    const idempotencyKey = `reject-${id}-${Date.now()}`;
+  rejectWithdrawal: async (id: string, reason?: string, idempotencyKey?: string): Promise<any> => {
+    const key = idempotencyKey || `reject-${id}-${Date.now()}`;
     const response = await apiClient.post(ENDPOINTS.ADMIN.REJECT_WITHDRAWAL(id), { reason }, {
-      headers: { 'idempotency-key': idempotencyKey }
+      headers: { 'idempotency-key': key }
     });
     return response.data;
   }

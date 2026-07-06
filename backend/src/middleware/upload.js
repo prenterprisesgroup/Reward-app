@@ -45,7 +45,10 @@ const uploadToCloudinary = async (file, folder = 'reward-app/profile-photos') =>
       resource_type: 'image'
     });
 
-    return result.secure_url;
+    return {
+      secure_url: result.secure_url,
+      public_id: result.public_id,
+    };
   } catch (error) {
     throw new Error('Failed to upload image to Cloudinary');
   }

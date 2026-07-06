@@ -18,21 +18,13 @@ const {
 } = require("../constants/statuses");
 const { ROLES } = require("../constants/roles");
 
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+const { escapeRegex, assertObjectId } = require("../utils/validation");
 
 function generateBarcodeCode(companyId) {
   const random = crypto.randomBytes(4).toString("hex").toUpperCase();
   const time = Date.now().toString().slice(-6);
   const companyFragment = companyId ? companyId.toString().slice(-4).toUpperCase() : "X";
   return `${companyFragment}-${time}-${random}`;
-}
-
-function assertObjectId(id, label) {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new HttpError(400, `${label} is invalid`);
-  }
 }
 
 function generateBatchId() {
@@ -579,9 +571,25 @@ async function listCompanyBarcodes(req, res, next) {
       filter.code = new RegExp(escapeRegex(search), "i");
     }
 
-    const barcodes = await Barcode.find(filter).sort({ createdAt: -1 }).limit(500);
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 25));
+    const skip = (page - 1) * limit;
 
-    res.json({ barcodes });
+    const [barcodes, total] = await Promise.all([
+      Barcode.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Barcode.countDocuments(filter)
+    ]);
+
+    res.json({
+      barcodes,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: skip + barcodes.length < total
+      }
+    });
   } catch (error) {
     next(error);
   }
@@ -680,12 +688,31 @@ async function listWithdrawals(req, res, next) {
       filter.status = req.query.status;
     }
 
-    const withdrawals = await WithdrawalRequest.find(filter)
-      .sort({ createdAt: -1 })
-      .populate("worker", "name phone profilePhoto")
-      .populate("company", "name");
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 15));
+    const skip = (page - 1) * limit;
 
-    res.json({ withdrawals });
+    const [withdrawals, total] = await Promise.all([
+      WithdrawalRequest.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("worker", "name phone profilePhoto")
+        .populate("company", "name")
+        .lean(),
+      WithdrawalRequest.countDocuments(filter)
+    ]);
+
+    res.json({
+      withdrawals,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: skip + withdrawals.length < total
+      }
+    });
   } catch (error) {
     next(error);
   }

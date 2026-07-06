@@ -12,7 +12,8 @@ const uploadProfilePhoto = async (req, res) => {
     }
 
     // Upload to Cloudinary
-    const photoUrl = await uploadToCloudinary(req.file);
+    const uploadResult = await uploadToCloudinary(req.file);
+    const photoUrl = uploadResult.secure_url;
 
     const userBefore = await User.findById(req.user._id || req.user.id);
     const user = await User.findByIdAndUpdate(

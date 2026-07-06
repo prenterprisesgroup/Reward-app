@@ -218,6 +218,29 @@ async function rejectCompany(req, res, next) {
   }
 }
 
+async function suspendCompany(req, res, next) {
+  try {
+    const { id } = req.params;
+    assertObjectId(id, "Company id");
+
+    const company = await Company.findById(id);
+
+    if (!company) {
+      throw new HttpError(404, "Company not found");
+    }
+
+    company.status = COMPANY_STATUS.SUSPENDED;
+    await company.save();
+
+    res.json({
+      company: presentCompany(company),
+      message: "Company suspended successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   createCompany,
   createCompanyAdmin,
@@ -225,4 +248,5 @@ module.exports = {
   listCompanies,
   approveCompany,
   rejectCompany,
+  suspendCompany,
 };

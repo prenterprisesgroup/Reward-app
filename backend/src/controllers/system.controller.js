@@ -635,7 +635,7 @@ async function listWithdrawals(req, res, next) {
 
     if (req.user.role === ROLES.WORKER) {
       filter.worker = req.user._id;
-    } else {
+    } else if (req.user.role !== ROLES.SUPER_ADMIN) {
       const companyId = req.user.company;
       if (!companyId) {
         throw new HttpError(400, "Company association is required");
@@ -647,7 +647,10 @@ async function listWithdrawals(req, res, next) {
       filter.status = req.query.status;
     }
 
-    const withdrawals = await WithdrawalRequest.find(filter).sort({ createdAt: -1 });
+    const withdrawals = await WithdrawalRequest.find(filter)
+      .sort({ createdAt: -1 })
+      .populate("worker", "name phone profilePhoto")
+      .populate("company", "name");
 
     res.json({ withdrawals });
   } catch (error) {

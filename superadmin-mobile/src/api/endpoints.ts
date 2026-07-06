@@ -15,10 +15,11 @@ export const ENDPOINTS = {
   ADMIN: {
     DASHBOARD_STATS: '/api/v1/system/dashboard/stats',
     DASHBOARD_ACTIVITY: '/api/v1/system/dashboard/activity',
-    PENDING_WITHDRAWALS: '/api/v1/system/withdrawals', // uses ?status=PENDING
+    PENDING_WITHDRAWALS: '/api/v1/system/withdrawals',
     PAYMENT_REQUESTS: '/api/v1/system/withdrawals',
     APPROVE_WITHDRAWAL: (id: string) => `/api/v1/system/withdrawals/${id}/approve`,
     REJECT_WITHDRAWAL: (id: string) => `/api/v1/system/withdrawals/${id}/reject`,
+    MARK_PAID: (id: string) => `/api/v1/system/withdrawals/${id}/mark-paid`,
     BARCODE_BATCHES: '/api/v1/system/barcode-batches',
     BARCODE_BATCHES_SCANS: '/api/v1/system/barcode-batches/scans',
     BATCH_SCAN: (id: string) => `/api/v1/system/barcode-batches/scans/${id}`,
@@ -30,5 +31,19 @@ export const ENDPOINTS = {
     WORKER_REWARDS: (id: string) => `/api/v1/system/workers/${id}/rewards`,
     WORKER_WITHDRAWALS: (id: string) => `/api/v1/system/workers/${id}/withdrawals`,
     WORKER_QR_ACTIVITY: (id: string) => `/api/v1/system/workers/${id}/qr-activity`,
-  }
+  },
+  SUPER_ADMIN: {
+    DASHBOARD_SUMMARY: '/api/v1/analytics/dashboard',
+    GLOBAL_ACTIVITY: '/api/v1/analytics/activity',
+    GLOBAL_WITHDRAWALS: '/api/v1/system/withdrawals',
+    COMPANIES: '/api/v1/admin/companies',
+    COMPANY: (id: string) => `/api/v1/admin/companies/${id}`,
+    APPROVE_COMPANY: (id: string) => `/api/v1/admin/companies/${id}/approve`,
+    REJECT_COMPANY: (id: string) => `/api/v1/admin/companies/${id}/reject`,
+    SUSPEND_COMPANY: (id: string) => `/api/v1/admin/companies/${id}/suspend`,
+    CREATE_COMPANY: '/api/v1/admin/companies',
+    CREATE_COMPANY_ADMIN: (companyId: string) => `/api/v1/admin/companies/${companyId}/admins`,
+    LIST_USERS: '/api/v1/admin-users/users',
+    USER: (id: string) => `/api/v1/admin-users/users/${id}`,
+  },
 } as const;

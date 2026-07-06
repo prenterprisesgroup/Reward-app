@@ -146,7 +146,7 @@ router.patch("/wallet/upi", authorizeRoles(ROLES.WORKER), upiLimiter, upiValidat
 router.post("/withdrawals", authorizeRoles(ROLES.WORKER), withdrawLimiter, withdrawValidation, validate, requestWithdrawal);
 router.get(
   "/withdrawals",
-  authorizeRoles(ROLES.WORKER, ROLES.COMPANY_ADMIN, ROLES.COMPANY_STAFF),
+  authorizeRoles(ROLES.WORKER, ROLES.COMPANY_ADMIN, ROLES.COMPANY_STAFF, ROLES.SUPER_ADMIN),
   listWithdrawals
 );
 router.post(

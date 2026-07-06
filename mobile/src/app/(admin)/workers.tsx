@@ -15,14 +15,7 @@ import { useWorkersQuery } from '../../hooks/useWorkersQuery';
 import { useToast } from '../../hooks/useToast';
 import { RefreshControl } from 'react-native';
 
-// ----------------------------------------------------------------------
-// MOCK DATA (Future Backend Readiness)
-// ----------------------------------------------------------------------
-const WORKER_STATS_MOCK: WorkerStats = {
-  totalWorkers: 125,
-  activeToday: 92,
-  rewardsDistributed: 248000,
-};
+import { useAdminDashboardStatsQuery } from '../../hooks/useAdminDashboardStatsQuery';
 
 const WORKERS_MOCK_DATA: Worker[] = [
   {
@@ -113,6 +106,17 @@ export default function WorkersScreen() {
   });
 
   const {
+    data: statsData,
+  } = useAdminDashboardStatsQuery();
+
+  const dashboardStats = statsData?.stats;
+  const workerStats: WorkerStats = {
+    totalWorkers: dashboardStats?.totalWorkers || 0,
+    activeToday: dashboardStats?.activeWorkers || 0,
+    rewardsDistributed: dashboardStats?.rewardsDistributed || 0,
+  };
+
+  const {
     data,
     isLoading,
     isFetching,
@@ -172,7 +176,7 @@ export default function WorkersScreen() {
             <View style={styles.subtitleRow}>
               <View style={styles.activeDot} />
               <Typography variant="caption" style={styles.subtitleText}>
-                {WORKER_STATS_MOCK.totalWorkers} Active Workers
+                {workerStats.totalWorkers} Total Workers
               </Typography>
             </View>
           </View>
@@ -236,10 +240,9 @@ export default function WorkersScreen() {
           })}
         </ScrollView>
       </Animated.View>
-
-      <WorkerAnalyticsCard stats={WORKER_STATS_MOCK} />
+      <WorkerAnalyticsCard stats={workerStats} />
     </View>
-  ), [filters, handleSearch, handleFilterChange]);
+  ), [filters, handleSearch, handleFilterChange, workerStats]);
 
   // Render Empty State
   const renderEmptyState = useCallback(() => {

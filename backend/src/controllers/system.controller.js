@@ -501,19 +501,52 @@ async function listCompanyWorkers(req, res, next) {
       throw new HttpError(400, "Company association is required");
     }
 
-    const { search } = req.query;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit, 10) || 10));
+    const skip = (page - 1) * limit;
+
+    const { search, status, sort } = req.query;
+    
     const filter = {
       company: companyId,
       role: ROLES.WORKER,
     };
 
     if (search) {
-      filter.name = new RegExp(escapeRegex(search), "i");
+      const regex = new RegExp(escapeRegex(search), "i");
+      filter.$or = [
+        { name: regex },
+        { workerId: regex },
+        { phone: regex }
+      ];
     }
 
-    const workers = await User.find(filter).sort({ createdAt: -1 });
+    if (status) {
+      if (status === "ACTIVE") filter.isActive = true;
+      if (status === "INACTIVE") filter.isActive = false;
+      if (status === "PENDING_VERIFICATION") filter.isVerified = false;
+    }
 
-    res.json({ workers: workers.map(presentUser) });
+    let sortObj = { createdAt: -1 };
+    if (sort === "oldest") sortObj = { createdAt: 1 };
+    if (sort === "name") sortObj = { name: 1 };
+
+    const [workers, total] = await Promise.all([
+      User.find(filter).sort(sortObj).skip(skip).limit(limit).lean(),
+      User.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      data: workers.map(presentUser),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: skip + workers.length < total,
+      }
+    });
   } catch (error) {
     next(error);
   }
@@ -1297,9 +1330,19 @@ async function getWorkerRewardHistory(req, res, next) {
       WalletTransaction.countDocuments(query),
     ]);
 
+    const formattedTransactions = transactions.map((tx) => ({
+      id: tx._id,
+      amount: tx.amount,
+      product: tx.barcode?.rewardAmount ? `Reward (${tx.barcode.rewardAmount})` : "Manual Reward",
+      batchName: tx.barcode?.code || "N/A",
+      rewardType: tx.type,
+      date: tx.createdAt,
+      status: tx.status,
+    }));
+
     res.json({
       success: true,
-      data: transactions,
+      data: formattedTransactions,
       pagination: {
         page,
         limit,
@@ -1340,9 +1383,17 @@ async function getWorkerWithdrawalHistory(req, res, next) {
       WithdrawalRequest.countDocuments(query),
     ]);
 
+    const formattedWithdrawals = withdrawals.map((w) => ({
+      id: w._id,
+      amount: w.amount,
+      requestedAt: w.createdAt,
+      approvedAt: w.reviewedAt || null,
+      status: w.status,
+    }));
+
     res.json({
       success: true,
-      data: withdrawals,
+      data: formattedWithdrawals,
       pagination: {
         page,
         limit,

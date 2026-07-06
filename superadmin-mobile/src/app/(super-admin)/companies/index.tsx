@@ -122,19 +122,22 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     bottom: 24,
-    right: 24,
+    alignSelf: 'center', // Center it horizontally
     backgroundColor: theme.colors.primaryDark,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderRadius: 30,
+    justifyContent: 'center',
+    paddingHorizontal: 32, // Wider padding
+    paddingVertical: 16, // Taller
+    borderRadius: 30, // Pill shape
+    width: '85%', // Take up most of the width like the design
+    maxWidth: 400,
     ...theme.shadows.md,
   },
   fabText: {
     color: theme.colors.surface,
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 16, // Slightly larger font
     marginLeft: 8,
   }
 });

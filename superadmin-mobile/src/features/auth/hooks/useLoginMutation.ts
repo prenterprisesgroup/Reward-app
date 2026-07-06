@@ -1,56 +1,53 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { Alert } from 'react-native';
 import { authApi } from '../../../api/auth.api';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { LoginFormData } from '../schemas/loginSchema';
+import { useGlobalToastStore } from '../../../store/useGlobalToastStore';
+import { queryClient } from '../../../api/queryClient';
 import axios from 'axios';
 
 export const useLoginMutation = () => {
   const router = useRouter();
   const setCredentials = useAuthStore((state) => state.setCredentials);
+  const logout = useAuthStore((state) => state.logout);
+  const showToast = useGlobalToastStore((state) => state.showToast);
 
   return useMutation({
     mutationFn: (credentials: LoginFormData) => authApi.login(credentials),
     onSuccess: async (data) => {
-      // 1. Securely save token & user state
+      // 1. Strictly verify SUPER_ADMIN role before granting session
+      if (data.user.role !== 'SUPER_ADMIN') {
+        showToast('Access Denied: Super Admin privileges required.', 'error');
+        // Do not set credentials. Trigger logout just in case.
+        await logout();
+        return;
+      }
+
+      // 2. Securely save token & user state
       await setCredentials(data.token, data.user);
       
-      // 2. Role-based navigation
-      switch (data.user.role) {
-        case 'WORKER':
-          router.replace('/(worker)');
-          break;
-        case 'COMPANY_ADMIN':
-          router.replace('/(admin)');
-          break;
-        case 'SUPER_ADMIN':
-          router.replace('/(super-admin)');
-          break;
-        default:
-          Alert.alert('Error', 'Unknown role provided by the server.');
-          break;
-      }
+      // 3. Navigate directly to dashboard
+      showToast('Welcome back, Super Admin!', 'success');
+      router.replace('/(super-admin)/dashboard');
     },
     onError: (error) => {
-      // Use existing Toast/Snackbar if it existed.
-      // Falling back to native Alert as a generic robust UI indicator
-      
       if (axios.isAxiosError(error)) {
         if (!error.response) {
-          Alert.alert('Network Error', 'No internet connection.');
+          showToast('Network Error: No internet connection.', 'error');
         } else if (error.response.status === 400) {
-          Alert.alert('Validation Error', error.response.data?.message || 'Invalid input.');
+          showToast(error.response.data?.message || 'Invalid input.', 'error');
         } else if (error.response.status === 401) {
-          Alert.alert('Login Failed', 'Invalid phone number or password.');
+          showToast('Login Failed: Invalid phone number or password.', 'error');
         } else if (error.response.status === 403) {
-          Alert.alert('Access Denied', 'You do not have permission to log in.');
+          showToast('Access Denied: You do not have permission to log in.', 'error');
         } else {
-          Alert.alert('Error', 'Something went wrong.\nPlease try again.');
+          showToast('Something went wrong. Please try again.', 'error');
         }
       } else {
-        Alert.alert('Error', 'An unexpected error occurred.');
+        showToast('An unexpected error occurred.', 'error');
       }
     },
   });
 };
+

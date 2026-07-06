@@ -16,7 +16,7 @@ export function useCreateBarcodeBatchMutation() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard-activity'] });
 
-      showToast('success', 'Batch generated successfully!');
+      showToast('', 'success');
       
       // Instantly go back and the newly created batch will appear due to cache invalidation
       router.back();

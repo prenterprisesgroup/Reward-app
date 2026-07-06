@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 export const TOKEN_KEY = 'AUTH_JWT_TOKEN';
 
 // Platform-agnostic storage helpers
-const setTokenAsync = async (key: string, value: string) => {
+export const setTokenAsync = async (key: string, value: string) => {
   if (Platform.OS === 'web') {
     if (typeof window !== 'undefined') window.localStorage.setItem(key, value);
   } else {
@@ -13,7 +13,7 @@ const setTokenAsync = async (key: string, value: string) => {
   }
 };
 
-const getTokenAsync = async (key: string) => {
+export const getTokenAsync = async (key: string) => {
   if (Platform.OS === 'web') {
     if (typeof window !== 'undefined') return window.localStorage.getItem(key);
     return null;
@@ -22,7 +22,7 @@ const getTokenAsync = async (key: string) => {
   }
 };
 
-const deleteTokenAsync = async (key: string) => {
+export const deleteTokenAsync = async (key: string) => {
   if (Platform.OS === 'web') {
     if (typeof window !== 'undefined') window.localStorage.removeItem(key);
   } else {
@@ -37,6 +37,7 @@ export interface User {
   name: string;
   phone: string;
   role: UserRole;
+  [key: string]: any;
 }
 
 interface AuthState {
@@ -44,16 +45,19 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoadingSession: boolean;
+  isLoggingOut: boolean;
   setCredentials: (token: string, user: User) => Promise<void>;
   logout: () => Promise<void>;
   restoreSession: () => Promise<void>;
+  setUser: (user: User) => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   token: null,
   user: null,
   isAuthenticated: false,
   isLoadingSession: true,
+  isLoggingOut: false,
 
   setCredentials: async (token: string, user: User) => {
     try {
@@ -64,12 +68,22 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
+  setUser: (user: User) => {
+    set({ user });
+  },
+
   logout: async () => {
+    const { isLoggingOut } = get();
+    if (isLoggingOut) return; // Prevent race conditions
+
+    set({ isLoggingOut: true });
     try {
       await deleteTokenAsync(TOKEN_KEY);
       set({ token: null, user: null, isAuthenticated: false });
     } catch (error) {
       console.error('Failed to securely delete token', error);
+    } finally {
+      set({ isLoggingOut: false });
     }
   },
 
@@ -77,8 +91,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const token = await getTokenAsync(TOKEN_KEY);
       if (token) {
-        // In a real app, you would validate the token or fetch the user profile here.
-        // For now, we just restore the token state.
         set({ token, isAuthenticated: true });
       }
     } catch (error) {

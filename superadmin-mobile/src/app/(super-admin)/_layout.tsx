@@ -1,16 +1,13 @@
 import { Tabs } from 'expo-router';
-import { BottomNavigation } from '../../components/navigation/BottomNavigation';
+import { RequireRole } from '../../components/navigation/RequireRole';
 
-export default function AdminLayout() {
+export default function SuperAdminLayout() {
   return (
-    <Tabs 
-      tabBar={() => <BottomNavigation isAdmin={true} />}
-      screenOptions={{ headerShown: false }}
-    >
-      <Tabs.Screen name="index" />
-      <Tabs.Screen name="qr-batches" />
-      <Tabs.Screen name="payments" />
-      <Tabs.Screen name="profile" />
-    </Tabs>
+    <RequireRole roles={['SUPER_ADMIN']}>
+      <Tabs screenOptions={{ headerShown: false }}>
+        <Tabs.Screen name="dashboard" />
+        {/* Placeholder tabs for future modules */}
+      </Tabs>
+    </RequireRole>
   );
 }

@@ -12,7 +12,7 @@ export function useDeleteBarcodeBatchMutation() {
       queryClient.invalidateQueries({ queryKey: ['barcode-batches'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard-activity'] });
-      showToast('success', 'Batch deleted successfully');
+      showToast('', 'success');
     },
     onError: (error: any) => {
       const message = error?.response?.data?.message || 'Failed to delete batch';

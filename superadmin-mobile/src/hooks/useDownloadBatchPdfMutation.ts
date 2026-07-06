@@ -37,11 +37,11 @@ export function useDownloadBatchPdfMutation() {
           dialogTitle: `Share ${batchName} QR Codes`,
         });
       } else {
-        showToast('success', 'PDF downloaded successfully (Sharing not available)');
+        showToast('', 'success');
       }
     },
     onSuccess: () => {
-      showToast('success', 'PDF prepared and shared successfully!');
+      showToast('', 'success');
     },
     onError: (error: any) => {
       const message = error?.response?.data?.message || error.message || 'Failed to download PDF';

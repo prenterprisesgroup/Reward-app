@@ -17,7 +17,7 @@ export function useUpdateBarcodeBatchMutation() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard-activity'] });
 
-      showToast('success', 'Batch updated successfully!');
+      showToast('Batch updated successfully!', 'success');
     },
     onError: (error: any) => {
       // Global error handling mapping to user-friendly toast

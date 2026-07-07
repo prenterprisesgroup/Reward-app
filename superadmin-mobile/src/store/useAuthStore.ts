@@ -64,7 +64,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await setTokenAsync(TOKEN_KEY, token);
       set({ token, user, isAuthenticated: true });
     } catch (error) {
-      console.error('Failed to securely store token', error);
+      // Ignore secure storage errors
     }
   },
 
@@ -81,7 +81,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await deleteTokenAsync(TOKEN_KEY);
       set({ token: null, user: null, isAuthenticated: false });
     } catch (error) {
-      console.error('Failed to securely delete token', error);
+      // Ignore secure deletion errors
     } finally {
       set({ isLoggingOut: false });
     }
@@ -94,7 +94,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ token, isAuthenticated: true });
       }
     } catch (error) {
-      console.error('Failed to restore session from secure storage', error);
+      // Ignore restoration errors
     } finally {
       set({ isLoadingSession: false });
     }

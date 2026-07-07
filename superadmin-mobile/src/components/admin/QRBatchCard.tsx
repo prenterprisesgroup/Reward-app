@@ -80,11 +80,10 @@ export const QRBatchCard = React.memo(({
   const expectedRemaining = batch.totalQRCodes - batch.redeemedCount;
   
   if (batch.remainingCount !== expectedRemaining) {
-    console.warn(`[Data Inconsistency] Batch ${batch.batchId} remainingCount (${batch.remainingCount}) does not match expected (${expectedRemaining}). Rendering backend value.`);
+    // Silent fallback to backend value for inconsistency
   }
 
   if (safeRemaining < 0) {
-    console.warn(`[Data Integrity] Batch ${batch.batchId} has negative remaining count (${safeRemaining}). Defaulting to 0 for UI safety.`);
     safeRemaining = 0;
   }
 

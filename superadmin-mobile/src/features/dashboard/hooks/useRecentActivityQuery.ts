@@ -16,10 +16,6 @@ export const useRecentActivityQuery = () => {
         return dashboardMapper.toRecentActivity(rawData);
       } catch (error) {
         if (!axios.isCancel(error)) {
-          console.error('[RecentActivity] API Failed:', {
-            timestamp: new Date().toISOString(),
-            error: error instanceof Error ? error.message : 'Unknown error',
-          });
           showToast('Failed to load recent activity.', 'error');
         }
         throw error;

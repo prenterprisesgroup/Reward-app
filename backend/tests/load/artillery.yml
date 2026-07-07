@@ -1,0 +1,30 @@
+config:
+  target: "http://localhost:5000"
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      rampTo: 50
+      name: "Warm up phase"
+    - duration: 120
+      arrivalRate: 50
+      name: "Sustained max load"
+  ensure:
+    thresholds:
+      - http.response_time.p95: 300
+    conditions:
+      - expression: "vusers.failed == 0"
+      - expression: "http.request_rate >= 40"
+  plugins:
+    expect: {}
+
+scenarios:
+  - name: "Health Check Endpoints"
+    flow:
+      - get:
+          url: "/health/live"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/health/ready"
+          expect:
+            - statusCode: 200

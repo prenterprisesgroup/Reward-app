@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Typography } from '../../../components/common/Typography';
 import { theme } from '../../../constants/theme';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { ToastAndroid, Platform, Alert } from 'react-native';
 
 type CompanyStatus = 'ACTIVE' | 'PENDING' | 'SUSPENDED';
 
@@ -22,7 +23,7 @@ interface CompanyCardProps {
   onAction?: () => void; // Suspend / Approve / Activate depending on status
 }
 
-export function CompanyCard({
+export const CompanyCard = memo(function CompanyCard({
   name,
   displayId,
   industry,
@@ -63,13 +64,13 @@ export function CompanyCard({
   const actionDetails = getActionIcon();
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={onView}>
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           {logoUrl ? (
             <Image source={{ uri: logoUrl }} style={styles.logo} />
           ) : (
-            <Typography variant="h2" color="primaryDark">
+            <Typography variant="title" color="primaryDark">
               {name.substring(0, 2).toUpperCase()}
             </Typography>
           )}
@@ -112,7 +113,13 @@ export function CompanyCard({
               {status.charAt(0) + status.slice(1).toLowerCase()}
             </Typography>
           </View>
-          <TouchableOpacity style={styles.moreButton}>
+          <TouchableOpacity 
+            style={styles.moreButton}
+            onPress={() => {
+              if (Platform.OS === 'android') ToastAndroid.show('More options coming soon', ToastAndroid.SHORT);
+              else Alert.alert('Coming Soon', 'More options coming soon');
+            }}
+          >
             <Feather name="more-vertical" size={20} color={theme.colors.textSecondary} />
           </TouchableOpacity>
         </View>
@@ -161,9 +168,9 @@ export function CompanyCard({
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

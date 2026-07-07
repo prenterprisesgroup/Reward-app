@@ -16,11 +16,6 @@ export const useDashboardStatsQuery = () => {
         return dashboardMapper.toDashboardStats(rawData);
       } catch (error) {
         if (!axios.isCancel(error)) {
-          // Observability Rule: Log failure for debugging
-          console.error('[DashboardStats] API Failed:', {
-            timestamp: new Date().toISOString(),
-            error: error instanceof Error ? error.message : 'Unknown error',
-          });
           showToast('Failed to load dashboard statistics.', 'error');
         }
         throw error;

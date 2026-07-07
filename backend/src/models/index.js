@@ -9,4 +9,5 @@ module.exports = {
   TokenBlacklist: require("./token-blacklist.model"),
   AuditLog: require("./audit-log.model"),
   IdempotencyKey: require("./idempotency-key.model"),
+  Counter: require("./counter.model"),
 };

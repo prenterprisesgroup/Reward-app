@@ -61,5 +61,6 @@ const withdrawalRequestSchema = new mongoose.Schema(
 
 withdrawalRequestSchema.index({ worker: 1, createdAt: -1 });
 withdrawalRequestSchema.index({ company: 1, status: 1 });
+withdrawalRequestSchema.index({ status: 1, createdAt: -1 }); // Added for global analytics
 
 module.exports = mongoose.model("WithdrawalRequest", withdrawalRequestSchema);

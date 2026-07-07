@@ -11,8 +11,12 @@ const FILTERS = [
   { id: 'pending', label: 'Pending Verification', color: theme.colors.warning },
 ];
 
-export function CompanyFilterPills() {
-  const [activeFilter, setActiveFilter] = useState('all');
+interface CompanyFilterPillsProps {
+  activeFilter: string;
+  onFilterChange: (filter: string) => void;
+}
+
+export function CompanyFilterPills({ activeFilter, onFilterChange }: CompanyFilterPillsProps) {
 
   return (
     <View style={styles.container}>
@@ -28,9 +32,9 @@ export function CompanyFilterPills() {
               key={filter.id}
               style={[
                 styles.pill,
-                isActive && styles.activePill
+                isActive ? styles.activePill : null
               ]}
-              onPress={() => setActiveFilter(filter.id)}
+              onPress={() => onFilterChange(filter.id)}
             >
               {filter.id !== 'all' && (
                 <View style={[styles.dot, { backgroundColor: filter.color }]} />
@@ -38,7 +42,7 @@ export function CompanyFilterPills() {
               <Typography 
                 style={[
                   styles.label,
-                  isActive && styles.activeLabel
+                  isActive ? styles.activeLabel : null
                 ]}
               >
                 {filter.label}
@@ -47,7 +51,15 @@ export function CompanyFilterPills() {
           );
         })}
         
-        <TouchableOpacity style={styles.sortPill}>
+        <TouchableOpacity 
+          style={styles.sortPill}
+          onPress={() => {
+            import('react-native').then(({ ToastAndroid, Platform, Alert }) => {
+              if (Platform.OS === 'android') ToastAndroid.show('Sorting coming soon', ToastAndroid.SHORT);
+              else Alert.alert('Coming Soon', 'Sorting coming soon');
+            });
+          }}
+        >
           <Feather name="calendar" size={14} color={theme.colors.textSecondary} style={{ marginRight: 6 }} />
           <Typography style={styles.sortLabel}>Newest</Typography>
         </TouchableOpacity>

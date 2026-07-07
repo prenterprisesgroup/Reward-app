@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Typography } from '../../../components/common/Typography';
 import { theme } from '../../../constants/theme';
 import { Feather } from '@expo/vector-icons';
+import { ToastAndroid, Platform, Alert } from 'react-native';
 
 interface CompanyScreenHeaderProps {
   totalCompanies: number;
@@ -12,7 +13,7 @@ export function CompanyScreenHeader({ totalCompanies }: CompanyScreenHeaderProps
   return (
     <View style={styles.container}>
       <View style={styles.titleSection}>
-        <Typography variant="h1" style={styles.title}>Companies</Typography>
+        <Typography variant="headingXl" style={styles.title}>Companies</Typography>
         <View style={styles.subtitleRow}>
           <View style={styles.greenDot} />
           <Typography variant="body" color="textSecondary" style={styles.subtitle}>
@@ -22,11 +23,23 @@ export function CompanyScreenHeader({ totalCompanies }: CompanyScreenHeaderProps
       </View>
 
       <View style={styles.actionsSection}>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity 
+          style={styles.iconButton}
+          onPress={() => {
+            if (Platform.OS === 'android') ToastAndroid.show('Notifications coming soon', ToastAndroid.SHORT);
+            else Alert.alert('Coming Soon', 'Notifications coming soon');
+          }}
+        >
           <View style={styles.notificationDot} />
           <Feather name="bell" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity 
+          style={styles.iconButton}
+          onPress={() => {
+            if (Platform.OS === 'android') ToastAndroid.show('Use the search bar below', ToastAndroid.SHORT);
+            else Alert.alert('Search', 'Use the search bar below');
+          }}
+        >
           <Feather name="search" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
       </View>

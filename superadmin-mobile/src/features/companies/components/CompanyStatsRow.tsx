@@ -54,7 +54,7 @@ export function CompanyStatsRow() {
               </View>
             </View>
             <View style={styles.valueSection}>
-              <Typography variant="h2" style={styles.value}>{stat.value}</Typography>
+              <Typography variant="title" style={styles.value}>{stat.value}</Typography>
               <Typography style={styles.subtitle}>{stat.subtitle}</Typography>
             </View>
           </View>

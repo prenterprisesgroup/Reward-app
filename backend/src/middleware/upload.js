@@ -36,7 +36,10 @@ const uploadToCloudinary = async (file, folder = 'reward-app/profile-photos') =>
       throw new Error('Spoofed file detected. Invalid binary signature.');
     }
 
-    const result = await cloudinary.uploader.upload(file.buffer, {
+    const b64 = Buffer.from(file.buffer).toString("base64");
+    const dataURI = "data:" + file.mimetype + ";base64," + b64;
+
+    const result = await cloudinary.uploader.upload(dataURI, {
       folder: folder,
       public_id: publicId,
       transformation: [

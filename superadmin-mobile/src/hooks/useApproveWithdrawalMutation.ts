@@ -85,7 +85,7 @@ export function useApproveWithdrawalMutation() {
       return { previousRequests, previousDashboard, previousActivity };
     },
     // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (err, newTodo, context: any) => {
+    onError: (err, id, context: any) => {
       if (context?.previousRequests) {
         context.previousRequests.forEach(([queryKey, data]: [any, any]) => {
           queryClient.setQueryData(queryKey, data);

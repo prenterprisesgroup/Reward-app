@@ -36,13 +36,20 @@
     },
     "plugins": [
       "expo-camera",
-      ["expo-router", { "root": "./src/app" }]
+      [
+        "expo-router",
+        {
+          "root": "./src/app"
+        }
+      ]
     ],
     "extra": {
+      "router": {
+        "root": "./src/app"
+      },
       "eas": {
-        "projectId": "f2750d23-0fc3-4110-bac9-ca5c2f5ee5f2"
+        "projectId": "31ce760c-bf4c-454b-ba0a-b4e7d3156036"
       }
-    },
-    "owner": "aishubamoriya"
+    }
   }
 }

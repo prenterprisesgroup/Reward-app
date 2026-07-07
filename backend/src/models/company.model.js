@@ -10,6 +10,17 @@ const companySchema = new mongoose.Schema(
       trim: true,
       maxlength: 120,
     },
+    displayId: {
+      type: String,
+      unique: true,
+      sparse: true, // Sparse allows nulls if old records exist, but unique when present
+      trim: true,
+    },
+    industry: {
+      type: String,
+      enum: ["Construction", "Manufacturing", "Retail", "IT", "Healthcare", "Education", "Other"],
+      default: "Other"
+    },
     legalName: {
       type: String,
       trim: true,
@@ -122,5 +133,6 @@ const companySchema = new mongoose.Schema(
 );
 
 companySchema.index({ name: 1 });
+companySchema.index({ status: 1, createdAt: -1 }); // Added for analytics
 
 module.exports = mongoose.model("Company", companySchema);

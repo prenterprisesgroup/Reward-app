@@ -66,6 +66,5 @@ const barcodeBatchSchema = new mongoose.Schema(
 
 barcodeBatchSchema.index({ company: 1, createdAt: -1 });
 barcodeBatchSchema.index({ company: 1, status: 1 });
-barcodeBatchSchema.index({ batchId: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model("BarcodeBatch", barcodeBatchSchema);

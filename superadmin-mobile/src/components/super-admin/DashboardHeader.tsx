@@ -5,6 +5,7 @@ import { theme } from '../../constants/theme';
 import { Feather } from '@expo/vector-icons';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ToastAndroid, Platform, Alert } from 'react-native';
 
 export function DashboardHeader() {
   const insets = useSafeAreaInsets();
@@ -21,13 +22,29 @@ export function DashboardHeader() {
       </View>
       
       <View style={styles.actionsContainer}>
-        <TouchableOpacity style={styles.iconButton} accessibilityRole="button" accessibilityLabel="Notifications">
+        <TouchableOpacity 
+          style={styles.iconButton} 
+          accessibilityRole="button" 
+          accessibilityLabel="Notifications"
+          onPress={() => {
+            if (Platform.OS === 'android') ToastAndroid.show('Notifications coming soon', ToastAndroid.SHORT);
+            else Alert.alert('Coming Soon', 'Notifications coming soon');
+          }}
+        >
           <Feather name="bell" size={20} color={theme.colors.textPrimary} />
           {/* Notification Dot */}
           <View style={styles.notificationDot} />
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.avatarContainer} accessibilityRole="button" accessibilityLabel="Profile">
+        <TouchableOpacity 
+          style={styles.avatarContainer} 
+          accessibilityRole="button" 
+          accessibilityLabel="Profile"
+          onPress={() => {
+            if (Platform.OS === 'android') ToastAndroid.show('Profile settings coming soon', ToastAndroid.SHORT);
+            else Alert.alert('Coming Soon', 'Profile settings coming soon');
+          }}
+        >
           <Image 
             source={{ uri: 'https://i.pravatar.cc/150?u=superadmin' }} 
             style={styles.avatar} 

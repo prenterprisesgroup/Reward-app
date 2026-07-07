@@ -5,6 +5,7 @@ import { Typography } from '../../../components/common/Typography';
 import { theme } from '../../../constants/theme';
 import { Feather } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
+import { ToastAndroid, Platform, Alert } from 'react-native';
 
 export function WithdrawalsWidget() {
   const { data, isLoading, isError } = usePendingWithdrawalsQuery();
@@ -44,7 +45,14 @@ export function WithdrawalsWidget() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Typography style={styles.title} variant="title">Pending Withdrawals</Typography>
-        <TouchableOpacity style={styles.viewAllBtn} accessibilityRole="button">
+        <TouchableOpacity 
+          style={styles.viewAllBtn} 
+          accessibilityRole="button"
+          onPress={() => {
+            if (Platform.OS === 'android') ToastAndroid.show('Full withdrawals list coming soon', ToastAndroid.SHORT);
+            else Alert.alert('Coming Soon', 'Full withdrawals list coming soon');
+          }}
+        >
           <Typography style={styles.viewAllText}>View All</Typography>
           <Feather name="chevron-right" size={16} color={theme.colors.primaryDark} />
         </TouchableOpacity>

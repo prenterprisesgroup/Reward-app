@@ -3,7 +3,12 @@ import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { theme } from '../../../constants/theme';
 import { Feather } from '@expo/vector-icons';
 
-export function CompanySearchBar() {
+interface CompanySearchBarProps {
+  searchQuery: string;
+  onSearchChange: (text: string) => void;
+}
+
+export function CompanySearchBar({ searchQuery, onSearchChange }: CompanySearchBarProps) {
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
@@ -12,8 +17,18 @@ export function CompanySearchBar() {
           style={styles.input}
           placeholder="Search company name, ID or industry..."
           placeholderTextColor={theme.colors.textTertiary}
+          value={searchQuery}
+          onChangeText={onSearchChange}
         />
-        <TouchableOpacity style={styles.filterButton}>
+        <TouchableOpacity 
+          style={styles.filterButton}
+          onPress={() => {
+            import('react-native').then(({ ToastAndroid, Platform, Alert }) => {
+              if (Platform.OS === 'android') ToastAndroid.show('Advanced filters coming soon', ToastAndroid.SHORT);
+              else Alert.alert('Coming Soon', 'Advanced filters coming soon');
+            });
+          }}
+        >
           <Feather name="sliders" size={20} color={theme.colors.textSecondary} />
         </TouchableOpacity>
       </View>

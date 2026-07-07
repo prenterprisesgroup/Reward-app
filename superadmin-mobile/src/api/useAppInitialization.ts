@@ -37,7 +37,6 @@ export function useAppInitialization() {
 
         } catch (error: any) {
           // If token is invalid, expired, or wrong role, logout and clear cache
-          console.log('App init auth failure', error?.message || error);
           await queryClient.cancelQueries();
           queryClient.removeQueries();
           queryClient.clear();
@@ -48,7 +47,7 @@ export function useAppInitialization() {
           }
         }
       } catch (e) {
-        console.warn('Initialization error:', e);
+        // Initialization error silently caught
       } finally {
         // 4. App Ready
         setIsReady(true);

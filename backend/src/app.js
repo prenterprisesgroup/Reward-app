@@ -27,6 +27,11 @@ const companyRoutes = require("./routes/company.routes");
 const adminUserRoutes = require("./routes/admin-user.routes");
 const appVersionRoutes = require("./routes/app-version.routes");
 const analyticsRoutes = require("./routes/analytics.routes");
+const settingsRoutes = require("./routes/settings.routes");
+const auditRoutes = require("./routes/audit.routes");
+const notificationRoutes = require("./routes/notification.routes");
+const reportRoutes = require("./routes/report.routes");
+const systemHealthRoutes = require("./routes/system-health.routes");
 const notFound = require("./middleware/not-found");
 const errorHandler = require("./middleware/error-handler");
 const { globalLimiter } = require("./middleware/rate-limiter");
@@ -71,6 +76,11 @@ app.use("/api/v1/system", systemRoutes);
 app.use("/api/v1/company", companyRoutes);
 app.use("/api/v1/app", appVersionRoutes);
 app.use("/api/v1/analytics", analyticsRoutes);
+app.use("/api/v1/settings", settingsRoutes);
+app.use("/api/v1/audit-logs", auditRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/reports", reportRoutes);
+app.use("/api/v1/system/health", systemHealthRoutes);
 
 app.get("/", (req, res) => {
   res.json({

@@ -6,6 +6,7 @@ import { Typography } from '../../../components/common/Typography';
 import { theme } from '../../../constants/theme';
 import { Feather } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
+import { ToastAndroid, Platform, Alert } from 'react-native';
 
 export function ActivityWidget() {
   const { data, isLoading, isError } = useRecentActivityQuery();
@@ -69,7 +70,14 @@ export function ActivityWidget() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Typography style={styles.title} variant="title">Recent Platform Activity</Typography>
-        <TouchableOpacity style={styles.viewAllBtn} accessibilityRole="button">
+        <TouchableOpacity 
+          style={styles.viewAllBtn} 
+          accessibilityRole="button"
+          onPress={() => {
+            if (Platform.OS === 'android') ToastAndroid.show('Full activity log coming soon', ToastAndroid.SHORT);
+            else Alert.alert('Coming Soon', 'Full activity log coming soon');
+          }}
+        >
           <Typography style={styles.viewAllText}>View All</Typography>
           <Feather name="chevron-right" size={16} color={theme.colors.primaryDark} />
         </TouchableOpacity>

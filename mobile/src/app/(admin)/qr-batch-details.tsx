@@ -104,6 +104,7 @@ const ScanRow = React.memo(({ item }: { item: any }) => (
 const getBatchStatus = (batch: any) => {
   if (batch.status === 'DELETED') return 'Deleted';
   if (batch.status === 'ARCHIVED') return 'Archived';
+  if (batch.status === 'INACTIVE') return 'Inactive';
   if (batch.status === 'COMPLETED') return 'Completed';
   if (batch.status === 'EXPIRED') return 'Expired';
   return 'Active';
@@ -146,7 +147,7 @@ export default function QRBatchDetailsScreen() {
   }>({ visible: false, type: null });
 
   // Local State
-  type LoadingAction = 'idle' | 'preparing_pdf' | 'downloading' | 'downloaded' | 'share_sheet' | 'duplicating' | 'sharing' | 'archiving' | 'deleting';
+  type LoadingAction = 'idle' | 'preparing_pdf' | 'downloading' | 'downloaded' | 'share_sheet' | 'duplicating' | 'sharing' | 'archiving' | 'deleting' | 'toggling';
   const [loadingAction, setLoadingAction] = useState<LoadingAction>('idle');
 
   // Derived Calculations
@@ -218,6 +219,24 @@ export default function QRBatchDetailsScreen() {
   const handleViewAllScans = useCallback(() => {
     router.push('/(admin)/batch-scans');
   }, [router]);
+
+  const handleToggleStatus = useCallback(() => {
+    if (!batch) return;
+    const nextStatus = batch.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+
+    setLoadingAction('toggling');
+    updateMutation.mutate({
+      id: batch.id,
+      payload: { status: nextStatus },
+    }, {
+      onSuccess: () => {
+        showToast('success', `Batch ${nextStatus === 'ACTIVE' ? 'activated' : 'deactivated'} successfully.`);
+      },
+      onSettled: () => {
+        setLoadingAction('idle');
+      }
+    });
+  }, [batch, showToast, updateMutation]);
 
   return (
     <View style={styles.container}>
@@ -419,6 +438,20 @@ export default function QRBatchDetailsScreen() {
             <Feather name="share-2" size={16} color={theme.colors.textSecondary} style={styles.actionBtnIcon} />
             <Typography weight="bold" style={styles.actionBtnText}>Share Batch</Typography>
           </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[styles.actionBtn, loadingAction !== 'idle' && styles.disabledOpacity]}
+            onPress={handleToggleStatus}
+            disabled={loadingAction !== 'idle'}
+            accessibilityRole="button"
+            accessibilityLabel={batch?.status === 'ACTIVE' ? 'Deactivate batch' : 'Activate batch'}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Feather name={batch?.status === 'ACTIVE' ? 'slash' : 'check-circle'} size={16} color={theme.colors.textSecondary} style={styles.actionBtnIcon} />
+            <Typography weight="bold" style={styles.actionBtnText}>
+              {loadingAction === 'toggling' ? (batch?.status === 'ACTIVE' ? 'Deactivating...' : 'Activating...') : (batch?.status === 'ACTIVE' ? 'Deactivate' : 'Activate')}
+            </Typography>
+          </TouchableOpacity>
         </Animated.View>
 
         {/* SECTION 5: RECENT SCANS */}
@@ -524,17 +557,17 @@ export default function QRBatchDetailsScreen() {
       {/* SECTION 7: BOTTOM ACTIONS (STICKY FOOTER) */}
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
         <TouchableOpacity 
-          style={[styles.footerBtn, styles.footerBtnArchive, loadingAction !== 'idle' && styles.disabledOpacity]}
-          onPress={() => handleAction('archive')}
+          style={[styles.footerBtn, batch?.status === 'ACTIVE' ? styles.footerBtnDeactivate : styles.footerBtnActivate, loadingAction !== 'idle' && styles.disabledOpacity]}
+          onPress={handleToggleStatus}
           disabled={loadingAction !== 'idle'}
           accessibilityRole="button"
         >
-          <Feather name="archive" size={16} color={theme.colors.success} style={styles.actionBtnIcon} />
-          <Typography weight="bold" style={[styles.footerBtnText, { color: theme.colors.success }]}>Archive Batch</Typography>
+          <Feather name={batch?.status === 'ACTIVE' ? 'slash' : 'check-circle'} size={16} color={batch?.status === 'ACTIVE' ? theme.colors.warning : theme.colors.success} style={styles.actionBtnIcon} />
+          <Typography weight="bold" style={[styles.footerBtnText, { color: batch?.status === 'ACTIVE' ? theme.colors.warning : theme.colors.success }]}>
+            {loadingAction === 'toggling' ? (batch?.status === 'ACTIVE' ? 'Deactivating...' : 'Activating...') : (batch?.status === 'ACTIVE' ? 'Deactivate' : 'Activate')}
+          </Typography>
         </TouchableOpacity>
-        
         <View style={{ width: 12 }} />
-
         <TouchableOpacity 
           style={[styles.footerBtn, styles.footerBtnDelete, loadingAction !== 'idle' && styles.disabledOpacity]}
           onPress={() => handleAction('delete')}
@@ -545,17 +578,6 @@ export default function QRBatchDetailsScreen() {
           <Typography weight="bold" style={[styles.footerBtnText, { color: theme.colors.error }]}>Delete Batch</Typography>
         </TouchableOpacity>
       </View>
-
-      {/* CONFIRMATION MODALS */}
-      <ConfirmationModal
-        visible={modalConfig.visible && modalConfig.type === 'delete'}
-        title="Delete Batch"
-        message={`Are you sure you want to delete "${batch?.batchName}"? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        onConfirm={confirmAction}
-        onCancel={closeModal}
-      />
 
       <ConfirmationModal
         visible={modalConfig.visible && modalConfig.type === 'archive'}
@@ -909,9 +931,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: theme.colors.surface,
   },
-  footerBtnArchive: {
+  footerBtnActivate: {
     borderColor: theme.colors.success + '40',
     backgroundColor: theme.colors.success + '05',
+  },
+  footerBtnDeactivate: {
+    borderColor: theme.colors.warning + '40',
+    backgroundColor: theme.colors.warning + '05',
   },
   footerBtnDelete: {
     borderColor: theme.colors.error + '40',

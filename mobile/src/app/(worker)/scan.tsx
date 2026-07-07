@@ -86,13 +86,24 @@ export default function WorkerScanQRScreen() {
 
   const handleBarcodeScanned = async (scanningResult: any) => {
     if (isScanningRef.current || isPending) return;
-    
+
+    const rawCode = scanningResult?.data;
+    const sanitizedCode = typeof rawCode === 'string' ? rawCode.trim().toUpperCase() : '';
+    if (!sanitizedCode) {
+      setToastMsg({ message: 'Invalid QR code', type: 'error' });
+      setTimeout(() => {
+        isScanningRef.current = false;
+        setToastMsg(null);
+      }, 2000);
+      return;
+    }
+
     // Prevent duplicate scans and pause scanner
     isScanningRef.current = true;
     setToastMsg(null);
     
     try {
-      const response = await mutateAsync(scanningResult.data);
+      const response = await mutateAsync({ code: sanitizedCode, idempotencyKey: `scan-${Date.now()}-${Math.random().toString(36).slice(2, 10)}` });
       // Success
       setRewardData(response as any); // Type assertion assuming backend matches ScanResponseData
       setShowSuccessModal(true);
@@ -371,6 +382,10 @@ export default function WorkerScanQRScreen() {
         visible={showSuccessModal}
         rewardData={rewardData!}
         onClose={() => {
+          setShowSuccessModal(false);
+          isScanningRef.current = false;
+        }}
+        onScanAnother={() => {
           setShowSuccessModal(false);
           isScanningRef.current = false;
         }}

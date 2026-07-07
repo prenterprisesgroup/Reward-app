@@ -11,6 +11,8 @@ import { ScreenWrapper } from '../../components/layout/ScreenWrapper';
 import { WalletData, RewardTransaction, PendingWithdrawal } from '../../types/backend.types';
 import { ActivityTimelineItem } from '../../components/admin/ActivityTimelineItem';
 import { PendingWithdrawalCard } from '../../components/admin/PendingWithdrawalCard';
+import { Toast } from '../../components/ui/Toast';
+import { useToast } from '../../hooks/useToast';
 
 import { useAdminDashboardStatsQuery } from '../../hooks/useAdminDashboardStatsQuery';
 import { useRecentActivityQuery } from '../../hooks/useRecentActivityQuery';
@@ -144,6 +146,8 @@ export default function CompanyAdminDashboardScreen() {
     </ScrollView>
   );
 
+  const { toastConfig, showToast, hideToast } = useToast();
+
   const renderQuickActions = () => (
     <View style={styles.sectionContainer}>
       <Typography variant="title" weight="bold" style={[styles.sectionTitle, { paddingHorizontal: theme.spacing.xl }]}>Quick Actions</Typography>
@@ -156,13 +160,19 @@ export default function CompanyAdminDashboardScreen() {
           { title: 'Generate\nQR Batch', icon: 'qrcode-scan', family: MaterialCommunityIcons, route: '/(admin)/create-qr-batch' },
           { title: 'Payment\nRequests', icon: 'file-text', family: Feather, route: '/(admin)/payments' },
           { title: 'Workers', icon: 'users', family: Feather, route: '/(admin)/workers' },
-          { title: 'Reports', icon: 'bar-chart-2', family: Feather, route: null },
+          // { title: 'Reports', icon: 'bar-chart-2', family: Feather, route: null, disabled: true },
         ].map((action, index) => (
           <Animated.View key={index} entering={FadeInUp.delay(400 + (index * 50)).springify()}>
             <TouchableOpacity 
-              style={styles.quickActionCard}
+              style={[styles.quickActionCard, action.disabled ? styles.quickActionCardDisabled : null]}
               activeOpacity={0.7}
-              onPress={() => action.route && router.push(action.route as any)}
+              onPress={() => {
+                if (action.route) {
+                  router.push(action.route as any);
+                } else {
+                  showToast('Reports are not available yet.', 'warning');
+                }
+              }}
             >
               <View style={styles.quickActionIconWrapper}>
                 <action.family name={action.icon as any} size={24} color={theme.colors.primaryDark} />
@@ -175,6 +185,7 @@ export default function CompanyAdminDashboardScreen() {
           </Animated.View>
         ))}
       </ScrollView>
+      <Toast {...toastConfig} onHide={hideToast} />
     </View>
   );
 
@@ -418,6 +429,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 2,
+  },
+  quickActionCardDisabled: {
+    opacity: 0.5,
   },
   statTrendSub: {
     fontSize: 12,

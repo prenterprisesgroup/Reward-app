@@ -139,7 +139,7 @@ export default function LoginScreen() {
               />
 
               <View style={styles.forgotPasswordContainer}>
-                <Pressable hitSlop={12} disabled={isPending}>
+                <Pressable hitSlop={12} disabled={isPending} onPress={() => router.push('/(auth)/forgot-password')}>
                   <Typography variant="bodySmall" color="accent" style={{ textDecorationLine: 'underline' }}>
                     Forgot Password?
                   </Typography>

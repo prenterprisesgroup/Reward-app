@@ -25,8 +25,8 @@ export const WorkerCard = React.memo(({ worker, index, onView, onCall }: WorkerC
       {/* Top Row: Avatar & Info */}
       <View style={styles.topRow}>
         <View style={styles.avatarContainer}>
-          {worker.profilePhoto ? (
-            <Image source={{ uri: worker.profilePhoto }} style={styles.avatar} />
+          {(worker.profilePhoto || worker.profilePhotoUrl) ? (
+            <Image source={{ uri: worker.profilePhoto || worker.profilePhotoUrl }} style={styles.avatar} />
           ) : (
             <View style={[styles.avatar, styles.avatarPlaceholder]}>
               <Typography style={styles.avatarText}>{worker.name.charAt(0)}</Typography>
@@ -46,7 +46,7 @@ export const WorkerCard = React.memo(({ worker, index, onView, onCall }: WorkerC
               <Feather name="check-circle" size={14} color={theme.colors.warning} />
             )}
           </View>
-          <Typography variant="caption" style={styles.idText}>ID: {worker.workerId}</Typography>
+          <Typography variant="caption" style={styles.idText}>ID: {worker.workerId || worker.id || worker._id}</Typography>
           <View style={styles.phoneRow}>
             <Feather name="phone" size={10} color={theme.colors.textSecondary} />
             <Typography variant="caption" style={styles.phoneText}>{worker.phone}</Typography>

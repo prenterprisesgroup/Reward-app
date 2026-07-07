@@ -284,7 +284,8 @@ async function scanBarcode(req, res, next) {
     const idempotencyKey = req.headers['idempotency-key'];
     const now = new Date();
 
-    if (!code) {
+    const normalizedCode = typeof code === 'string' ? code.trim().toUpperCase() : '';
+    if (!normalizedCode) {
       throw new HttpError(400, "Barcode code is required");
     }
 
@@ -299,7 +300,7 @@ async function scanBarcode(req, res, next) {
 
     const barcode = await Barcode.findOneAndUpdate(
       {
-        code,
+        code: normalizedCode,
         status: BARCODE_STATUS.ACTIVE,
         $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }],
       },
@@ -309,7 +310,9 @@ async function scanBarcode(req, res, next) {
         redeemedAt: now,
       },
       { new: true, session }
-    );
+    )
+      .populate({ path: 'company', select: 'name' })
+      .populate({ path: 'batch', select: 'productName' });
 
     if (!barcode) {
       throw new HttpError(400, "Barcode is invalid, expired, or already redeemed");
@@ -344,7 +347,12 @@ async function scanBarcode(req, res, next) {
           name: company.name,
         },
       },
+      companyName: barcode.company?.name || company.name || 'Unknown Company',
+      productName: barcode.batch?.productName || 'Unknown Product',
+      rewardAmount: barcode.rewardAmount,
+      newWalletBalance: worker.walletBalance,
       walletBalance: worker.walletBalance,
+      timestamp: barcode.redeemedAt ? barcode.redeemedAt.toISOString() : now.toISOString(),
       transaction: transaction[0],
     };
 
@@ -1110,7 +1118,7 @@ async function getBarcodeBatchDetails(req, res, next) {
 async function updateBarcodeBatch(req, res, next) {
   try {
     const { id } = req.params;
-    const { productName, expiresAt } = req.body;
+    const { productName, expiresAt, status } = req.body;
     const companyId = req.user.company;
     if (!companyId) throw new HttpError(400, "Company association is required");
     assertObjectId(id, "Barcode batch id");
@@ -1121,8 +1129,28 @@ async function updateBarcodeBatch(req, res, next) {
     if (productName) batch.productName = productName;
     if (expiresAt !== undefined) batch.expiresAt = expiresAt;
 
+    const statusChanged = status && status !== batch.status;
+    if (statusChanged) {
+      batch.status = status;
+    }
+
     await batch.save();
-    await logAudit(companyId, req.user._id, "BARCODE_BATCH_UPDATED", { batchId: batch._id });
+
+    if (statusChanged) {
+      if (status === BARCODE_BATCH_STATUS.INACTIVE) {
+        await Barcode.updateMany(
+          { batch: batch._id, status: BARCODE_STATUS.ACTIVE },
+          { status: BARCODE_STATUS.INACTIVE }
+        );
+      } else if (status === BARCODE_BATCH_STATUS.ACTIVE) {
+        await Barcode.updateMany(
+          { batch: batch._id, status: BARCODE_STATUS.INACTIVE },
+          { status: BARCODE_STATUS.ACTIVE }
+        );
+      }
+    }
+
+    await logAudit(companyId, req.user._id, "BARCODE_BATCH_UPDATED", { batchId: batch._id, status: batch.status });
 
     res.json(presentBarcodeBatch(batch));
   } catch (error) {

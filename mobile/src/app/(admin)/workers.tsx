@@ -12,6 +12,7 @@ import { WorkerCard } from '../../components/admin/WorkerCard';
 import { WorkerAnalyticsCard } from '../../components/admin/WorkerAnalyticsCard';
 import { WorkerSkeletonCard } from '../../components/admin/WorkerSkeletonCard';
 import { useWorkersQuery } from '../../hooks/useWorkersQuery';
+import { useAdminDashboardStatsQuery } from '../../hooks/useAdminDashboardStatsQuery';
 import { useToast } from '../../hooks/useToast';
 import { RefreshControl } from 'react-native';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -81,7 +82,19 @@ export default function WorkersScreen() {
   }, []);
 
   const workers = useMemo(() => {
-    return data?.pages?.flatMap(page => page.data) || [];
+    return (
+      data?.pages?.flatMap(page => page.data.map((item: any) => ({
+        ...item,
+        _id: item._id || item.id,
+        id: item._id || item.id,
+        workerId: item.workerId || (item._id ? item._id.toString().slice(-6).toUpperCase() : undefined),
+        profilePhoto: item.profilePhoto || item.profilePhotoUrl,
+        totalEarned: item.totalEarned ?? item.walletBalance ?? 0,
+        pendingWithdrawal: item.pendingWithdrawal ?? item.pendingWithdrawalBalance ?? 0,
+        status: item.status ?? (item.isActive ? WorkerStatus.ACTIVE : WorkerStatus.INACTIVE),
+        verificationStatus: item.verificationStatus ?? (item.isActive ? 'VERIFIED' : 'PENDING'),
+      }))) || []
+    );
   }, [data]);
 
   const loadMore = () => {

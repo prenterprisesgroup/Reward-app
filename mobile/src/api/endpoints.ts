@@ -4,6 +4,9 @@ export const ENDPOINTS = {
     ME: '/api/v1/auth/me',
     UPDATE_ME: '/api/v1/auth/me',
     UPDATE_PHOTO: '/api/v1/auth/me/photo',
+    REQUEST_PASSWORD_RESET: '/api/v1/auth-otp/request-password-reset',
+    VERIFY_PASSWORD_RESET: '/api/v1/auth-otp/verify-password-reset',
+    COMPLETE_PASSWORD_RESET: '/api/v1/auth-otp/complete-password-reset',
   },
   SYSTEM: {
     WALLET: '/api/v1/system/wallet',

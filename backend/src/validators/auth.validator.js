@@ -29,9 +29,28 @@ const registerCompanyValidation = [
   body("adminPassword").isString().isLength({ min: 8 }),
 ];
 
+const passwordResetRequestValidation = [
+  body("email").isEmail().withMessage("Valid email is required"),
+];
+
+const passwordResetVerifyValidation = [
+  body("email").isEmail().withMessage("Valid email is required"),
+  body("otpCode").isString().trim().notEmpty().withMessage("OTP code is required"),
+];
+
+const passwordResetCompleteValidation = [
+  body("email").isEmail().withMessage("Valid email is required"),
+  body("otpCode").isString().trim().notEmpty().withMessage("OTP code is required"),
+  body("newPassword").isString().isLength({ min: 8 }).withMessage("New password must be at least 8 characters"),
+  body("confirmPassword").custom((value, { req }) => value === req.body.newPassword).withMessage("Confirm password must match new password"),
+];
+
 module.exports = {
   loginValidation,
   registerWorkerValidation,
   updateMeValidation,
   registerCompanyValidation,
+  passwordResetRequestValidation,
+  passwordResetVerifyValidation,
+  passwordResetCompleteValidation,
 };

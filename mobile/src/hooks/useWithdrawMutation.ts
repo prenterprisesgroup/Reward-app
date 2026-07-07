@@ -5,7 +5,7 @@ export const useWithdrawMutation = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (payload: { amount: number; upiId: string; company: string }) => withdrawApi.withdrawFunds(payload),
+    mutationFn: (payload: { amount: number; upiId?: string; company: string; idempotencyKey: string }) => withdrawApi.withdrawFunds(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });

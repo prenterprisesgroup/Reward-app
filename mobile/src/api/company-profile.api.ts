@@ -1,4 +1,4 @@
-import apiClient from './client';
+import { apiClient } from './client';
 
 export interface CompanySettings {
   language: string;
@@ -11,6 +11,15 @@ export interface CompanySettings {
   currency: string;
 }
 
+export interface CompanyAddress {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  country?: string;
+}
+
 export interface CompanyProfile {
   id: string;
   companyId: string;
@@ -19,10 +28,10 @@ export interface CompanyProfile {
   verified: boolean;
   email: string;
   phone: string;
-  address: string;
+  address: string | CompanyAddress | null;
   gstNumber: string;
   createdAt: string;
-  upiId: string;
+  upiId: string | null;
   bankName: string;
   bankAccountMasked: string;
   ifscCode: string;
@@ -32,15 +41,20 @@ export interface CompanyProfile {
   notifications: CompanySettings['notifications'];
 }
 
+export type UpdateCompanyProfilePayload = Partial<CompanyProfile> & {
+  name?: string;
+  accountNumber?: string;
+};
+
 export const getCompanyProfile = async (): Promise<CompanyProfile> => {
-  const { data } = await apiClient.get('/company/me');
+  const { data } = await apiClient.get('/api/v1/company/me');
   return data;
 };
 
 export const updateCompanyProfile = async (
-  payload: Partial<CompanyProfile> & { accountNumber?: string }
+  payload: UpdateCompanyProfilePayload
 ): Promise<CompanyProfile> => {
-  const { data } = await apiClient.patch('/company/me', payload);
+  const { data } = await apiClient.patch('/api/v1/company/me', payload);
   return data;
 };
 
@@ -58,7 +72,7 @@ export const uploadCompanyLogo = async (fileUri: string): Promise<CompanyProfile
     type,
   } as any);
 
-  const { data } = await apiClient.post('/company/me/logo', formData, {
+  const { data } = await apiClient.post('/api/v1/company/me/logo', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -69,6 +83,6 @@ export const uploadCompanyLogo = async (fileUri: string): Promise<CompanyProfile
 export const updateCompanySettings = async (
   settings: Partial<CompanySettings>
 ): Promise<CompanyProfile> => {
-  const { data } = await apiClient.patch('/company/settings', settings);
+  const { data } = await apiClient.patch('/api/v1/company/settings', settings);
   return data;
 };

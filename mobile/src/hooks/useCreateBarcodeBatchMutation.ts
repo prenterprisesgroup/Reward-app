@@ -18,8 +18,8 @@ export function useCreateBarcodeBatchMutation() {
 
       showToast('success', 'Batch generated successfully!');
       
-      // Instantly go back and the newly created batch will appear due to cache invalidation
-      router.back();
+      // Replace the create screen with the QR batches list after creation
+      router.replace('/(admin)/qr-batches');
     },
     onError: (error: any) => {
       // Backend validation errors and other error handling

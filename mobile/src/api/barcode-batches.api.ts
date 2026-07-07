@@ -21,12 +21,14 @@ export interface CreateBarcodeBatchPayload {
 export interface UpdateBarcodeBatchPayload {
   productName?: string;
   expiresAt?: string | null;
+  status?: string;
 }
 
 export const mapBatchToUpdatePayload = (batch: QRBatch): UpdateBarcodeBatchPayload => {
   return {
     productName: batch.batchName,
     expiresAt: batch.expiresAt,
+    status: batch.status,
   };
 };
 

@@ -39,6 +39,7 @@ const updateBarcodeBatchValidation = [
   param("id").isMongoId(),
   body("productName").optional().isString().isLength({ max: 160 }),
   body("expiresAt").optional({ nullable: true }).isISO8601().toDate(),
+  body("status").optional().isString().isIn(["DRAFT", "ACTIVE", "INACTIVE", "EXPIRED", "CANCELLED"]),
 ];
 
 const duplicateBarcodeBatchValidation = [

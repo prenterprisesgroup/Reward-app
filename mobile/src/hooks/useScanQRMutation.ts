@@ -5,7 +5,7 @@ export const useScanQRMutation = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (code: string) => scannerApi.scanBarcode(code),
+    mutationFn: ({ code, idempotencyKey }: { code: string; idempotencyKey: string }) => scannerApi.scanBarcode(code, idempotencyKey),
     onSuccess: () => {
       // Invalidate both wallet and user query after a successful scan
       queryClient.invalidateQueries({ queryKey: ['wallet'] });

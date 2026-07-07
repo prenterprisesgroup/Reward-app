@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Alert, ToastAndroid, Platform, KeyboardAvoidingView } from 'react-native';
+import axios from 'axios';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -8,7 +9,6 @@ import { theme } from '../../constants/theme';
 import { useWalletQuery } from '../../hooks/useWalletQuery';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useWithdrawMutation } from '../../hooks/useWithdrawMutation';
-import { ActivityIndicator, TextInput, Alert, ToastAndroid, Platform, KeyboardAvoidingView } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -20,9 +20,9 @@ export default function WithdrawRewardsScreen() {
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   
-  const companyId = params.companyId as string;
-  const companyName = params.companyName as string || 'Rewards';
-  const availableBalance = parseInt(params.availableBalance as string, 10) || 0;
+  const companyId = typeof params.companyId === 'string' ? params.companyId : '';
+  const companyName = (typeof params.companyName === 'string' ? params.companyName : '') || 'Rewards';
+  const availableBalance = parseInt(typeof params.availableBalance === 'string' ? params.availableBalance : '', 10) || 0;
 
   const { data: walletData, isLoading: isLoadingWallet } = useWalletQuery();
   const { user } = useAuthStore();
@@ -31,7 +31,8 @@ export default function WithdrawRewardsScreen() {
   const [selectedAmount, setSelectedAmount] = useState<string | null>(null);
   const [amount, setAmount] = useState('');
 
-  const upiId = user?.upiId || 'No UPI ID Set';
+  const upiId = user?.upiId?.trim() || '';
+  const hasUpiId = Boolean(upiId);
   const userName = user?.name || 'User';
 
   const quickAmounts = ['100', '500', '1000', '2000', 'MAX'];
@@ -50,14 +51,25 @@ export default function WithdrawRewardsScreen() {
     !amount.includes('.') &&
     !amount.includes('-');
 
+  const canSubmitWithdrawal = isValidAmount && hasUpiId;
+
   const handleWithdraw = async () => {
-    if (!isValidAmount || withdrawMutation.isPending) return;
+    if (!canSubmitWithdrawal || withdrawMutation.isPending) return;
     
     try {
+      if (!companyId) {
+        throw new Error('Please select a company balance before requesting withdrawal.');
+      }
+
+      if (!hasUpiId) {
+        throw new Error('Please add a valid UPI ID in your profile before withdrawing.');
+      }
+
       const response = await withdrawMutation.mutateAsync({
         amount: numericAmount,
         upiId: upiId,
-        company: companyId
+        company: companyId,
+        idempotencyKey: `withdraw-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
       });
       
       router.push({
@@ -70,10 +82,17 @@ export default function WithdrawRewardsScreen() {
         }
       });
     } catch (error: any) {
+      let message = 'Withdrawal failed. Please try again.';
+      if (axios.isAxiosError(error)) {
+        message = error.response?.data?.message || error.response?.data?.error || message;
+      } else if (error?.message) {
+        message = error.message;
+      }
+
       if (Platform.OS === 'android') {
-        ToastAndroid.show(error?.message || 'Withdrawal failed. Please try again.', ToastAndroid.SHORT);
+        ToastAndroid.show(message, ToastAndroid.SHORT);
       } else {
-        Alert.alert('Error', error?.message || 'Withdrawal failed. Please try again.');
+        Alert.alert('Error', message);
       }
     }
   };
@@ -203,12 +222,18 @@ export default function WithdrawRewardsScreen() {
             <View style={styles.paymentInfo}>
               <Typography style={styles.paymentLabel}>Primary UPI</Typography>
               <View style={styles.paymentValueRow}>
-                <Typography style={styles.paymentValue} numberOfLines={1} ellipsizeMode="middle">{upiId}</Typography>
-                <View style={styles.verifiedBadge}>
-                  <Feather name="check" size={10} color="#FFF" />
-                </View>
+                <Typography style={styles.paymentValue} numberOfLines={1} ellipsizeMode="middle">
+                  {upiId || 'No UPI ID set'}
+                </Typography>
+                {hasUpiId && (
+                  <View style={styles.verifiedBadge}>
+                    <Feather name="check" size={10} color="#FFF" />
+                  </View>
+                )}
               </View>
-              <Typography style={styles.verifiedText}>Verified</Typography>
+              <Typography style={styles.verifiedText}>
+                {hasUpiId ? 'Verified' : 'Not configured'}
+              </Typography>
             </View>
             <TouchableOpacity style={styles.editBtn} onPress={() => {}}>
               <Typography style={styles.editBtnText}>Edit</Typography>
@@ -294,9 +319,9 @@ export default function WithdrawRewardsScreen() {
         <PrimaryButton 
           title={withdrawMutation.isPending ? "Processing..." : "Withdraw Now"} 
           onPress={handleWithdraw} 
-          disabled={!isValidAmount || withdrawMutation.isPending}
+          disabled={!canSubmitWithdrawal || withdrawMutation.isPending}
           icon={withdrawMutation.isPending ? undefined : <MaterialCommunityIcons name="wallet-outline" size={20} color="#FFF" style={{ marginRight: 8 }} />}
-          style={[styles.withdrawNowBtn, (!isValidAmount || withdrawMutation.isPending) && styles.withdrawNowBtnDisabled]}
+          style={[styles.withdrawNowBtn, (!canSubmitWithdrawal || withdrawMutation.isPending) && styles.withdrawNowBtnDisabled]}
         />
         
         <TouchableOpacity style={[styles.cancelBtn, { marginBottom: 0 }]} onPress={() => router.back()} disabled={withdrawMutation.isPending}>

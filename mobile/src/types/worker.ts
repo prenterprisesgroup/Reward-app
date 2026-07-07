@@ -8,15 +8,19 @@ export type WorkerVerificationStatus = 'VERIFIED' | 'PENDING' | 'REJECTED';
 
 export interface Worker {
   _id: string;
-  workerId: string;
+  id?: string;
+  workerId?: string;
   name: string;
   phone: string;
   profilePhoto?: string;
+  profilePhotoUrl?: string;
   walletBalance: number;
-  pendingWithdrawal: number;
-  totalEarned: number;
-  status: WorkerStatus;
-  verificationStatus: WorkerVerificationStatus;
+  pendingWithdrawal?: number;
+  pendingWithdrawalBalance?: number;
+  totalEarned?: number;
+  status?: WorkerStatus;
+  verificationStatus?: WorkerVerificationStatus;
+  isActive?: boolean;
 }
 
 export interface WorkerStats {

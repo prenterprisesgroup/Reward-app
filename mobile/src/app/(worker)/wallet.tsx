@@ -152,7 +152,7 @@ export default function WalletScreen() {
           <View style={styles.transactionsContainer}>
             <FlatList 
               data={displayTransactions}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => item.id?.toString() || `tx-${Math.random()}`}
               renderItem={renderTransaction}
               scrollEnabled={false}
               showsVerticalScrollIndicator={false}

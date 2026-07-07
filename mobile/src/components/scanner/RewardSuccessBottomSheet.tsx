@@ -143,7 +143,10 @@ export default function RewardSuccessBottomSheet({ visible, onClose, onScanAnoth
             </View>
 
             <Typography style={styles.title}>Reward Claimed Successfully 🎉</Typography>
-            <Typography style={styles.amount}>+₹{displayAmount}</Typography>
+            <View style={styles.amountWrapper}>
+              <Typography style={styles.amountSign}>+</Typography>
+              <Typography style={styles.amount}>₹{displayAmount.toLocaleString('en-IN')}</Typography>
+            </View>
 
             {/* Detailed Info Card */}
             <View style={styles.detailCard}>
@@ -175,7 +178,7 @@ export default function RewardSuccessBottomSheet({ visible, onClose, onScanAnoth
                   <Typography style={styles.rowLabel}>Product</Typography>
                 </View>
                 <View style={styles.rowRight}>
-                  <Typography style={styles.rowValue}>{rewardData?.productName || 'Unknown Product'}</Typography>
+                  <Typography style={styles.rowValue}>{rewardData?.productName || rewardData?.barcode?.batch?.productName || 'Unknown Product'}</Typography>
                 </View>
               </View>
               
@@ -316,13 +319,26 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 4,
   },
+  amountWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    marginBottom: 24,
+  },
+  amountSign: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: localTheme.colors.primary,
+    marginRight: 8,
+    lineHeight: 56,
+  },
   amount: {
-    fontSize: 48,
+    fontSize: 52,
     fontWeight: '900',
     color: localTheme.colors.primary,
     textAlign: 'center',
-    marginBottom: 24,
-    letterSpacing: -1,
+    lineHeight: 58,
+    letterSpacing: 0,
   },
   detailCard: {
     backgroundColor: localTheme.colors.card,

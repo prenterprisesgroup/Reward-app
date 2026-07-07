@@ -55,7 +55,9 @@ async function updateCompanyProfile(req, res, next) {
 
     if (name !== undefined) updateData.name = name;
     if (phone !== undefined) updateData.phone = phone;
-    if (address !== undefined) updateData.address = address;
+    if (address !== undefined) {
+      updateData.address = typeof address === 'string' ? { line1: address } : address;
+    }
     if (upiId !== undefined) updateData.upiId = upiId;
     if (settlementMethod !== undefined) updateData.settlementMethod = settlementMethod;
 

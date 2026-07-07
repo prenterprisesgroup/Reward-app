@@ -8,6 +8,22 @@ interface LoginResponse {
   user: User;
 }
 
+interface PasswordResetRequestData {
+  email: string;
+}
+
+interface PasswordResetVerifyData {
+  email: string;
+  otpCode: string;
+}
+
+interface PasswordResetCompleteData {
+  email: string;
+  otpCode: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export const authApi = {
   login: async (credentials: LoginFormData): Promise<LoginResponse> => {
     const response = await apiClient.post<LoginResponse>(ENDPOINTS.AUTH.LOGIN, credentials);
@@ -27,6 +43,18 @@ export const authApi = {
   },
   changePassword: async (data: any): Promise<{ message: string }> => {
     const response = await apiClient.patch<{ message: string }>('/auth/change-password', data);
+    return response.data;
+  },
+  requestPasswordReset: async (data: PasswordResetRequestData): Promise<{ message: string }> => {
+    const response = await apiClient.post<{ message: string }>(ENDPOINTS.AUTH.REQUEST_PASSWORD_RESET, data);
+    return response.data;
+  },
+  verifyPasswordReset: async (data: PasswordResetVerifyData): Promise<{ message: string }> => {
+    const response = await apiClient.post<{ message: string }>(ENDPOINTS.AUTH.VERIFY_PASSWORD_RESET, data);
+    return response.data;
+  },
+  completePasswordReset: async (data: PasswordResetCompleteData): Promise<{ message: string }> => {
+    const response = await apiClient.post<{ message: string }>(ENDPOINTS.AUTH.COMPLETE_PASSWORD_RESET, data);
     return response.data;
   },
 };

@@ -16,7 +16,7 @@ export interface QRBatch {
   generatedCount: number;
   redeemedCount: number;
   remainingCount: number;
-  status: 'ACTIVE' | 'COMPLETED' | 'EXPIRED';
+  status: 'ACTIVE' | 'INACTIVE' | 'COMPLETED' | 'EXPIRED';
   createdAt: string;
   expiresAt: string | null;
   pdfUrl: string | null;
@@ -33,7 +33,8 @@ interface QRBatchCardProps {
   onDownload: (batch: QRBatch) => void;
   onDuplicate: (batch: QRBatch) => void;
   onDelete?: (batch: QRBatch) => void;
-  loadingAction?: 'download' | 'duplicate' | 'delete' | null;
+  onToggle?: (batch: QRBatch) => void;
+  loadingAction?: 'download' | 'duplicate' | 'delete' | 'toggle' | null;
   downloadState?: 'preparing' | 'downloading' | 'completed' | 'failed' | null;
 }
 
@@ -57,6 +58,7 @@ export const QRBatchCard = React.memo(({
   onDownload, 
   onDuplicate,
   onDelete,
+  onToggle,
   loadingAction,
   downloadState
 }: QRBatchCardProps) => {
@@ -67,6 +69,9 @@ export const QRBatchCard = React.memo(({
   if (batch.status === 'ACTIVE') {
     statusColor = theme.colors.success;
     statusBg = theme.colors.successBackground;
+  } else if (batch.status === 'INACTIVE') {
+    statusColor = theme.colors.textSecondary;
+    statusBg = theme.colors.border;
   } else if (batch.status === 'COMPLETED') {
     statusColor = theme.colors.info;
     statusBg = theme.colors.infoBackground;
@@ -175,66 +180,80 @@ export const QRBatchCard = React.memo(({
           accessibilityLabel="View Details"
           hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
         >
-          <Feather name="eye" size={16} color={theme.colors.primary} />
-          <Typography variant="caption" weight="medium" style={styles.actionText} numberOfLines={1} adjustsFontSizeToFit>
-            View Details
-          </Typography>
-        </TouchableOpacity>
+        <Feather name="eye" size={20} color={theme.colors.primary} />
+      </TouchableOpacity>
 
+      <TouchableOpacity 
+        style={styles.actionBtn}
+        onPress={() => onDownload(batch)}
+        accessibilityRole="button"
+        accessibilityLabel="Download PDF"
+        hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
+        disabled={loadingAction === 'download' || downloadState === 'preparing' || downloadState === 'downloading'}
+      >
+        {loadingAction === 'download' || downloadState === 'preparing' || downloadState === 'downloading' ? (
+          <ActivityIndicator size="small" color={theme.colors.primary} />
+        ) : downloadState === 'completed' ? (
+          <Feather name="check" size={20} color={theme.colors.success} />
+        ) : (
+          <Feather name="download" size={20} color={theme.colors.primary} />
+        )}
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles.actionBtn}
+        onPress={() => onDuplicate(batch)}
+        accessibilityRole="button"
+        accessibilityLabel="Duplicate Batch"
+        hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
+        disabled={loadingAction === 'duplicate' || loadingAction === 'delete'}
+      >
+        {loadingAction === 'duplicate' ? (
+          <ActivityIndicator size="small" color={theme.colors.primary} />
+        ) : (
+          <Feather name="copy" size={16} color={theme.colors.primary} />
+        )}
+        <Typography variant="caption" weight="medium" style={styles.actionText} numberOfLines={1} adjustsFontSizeToFit>
+          Copy
+        </Typography>
+      </TouchableOpacity>
+
+      {onDelete && (
         <TouchableOpacity 
-          style={styles.actionBtn}
-          onPress={() => onDownload(batch)}
+          style={[styles.actionBtn, { borderColor: theme.colors.error }]}
+          onPress={() => onDelete(batch)}
           accessibilityRole="button"
-          accessibilityLabel="Download PDF"
+          accessibilityLabel="Delete Batch"
           hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
-          disabled={loadingAction === 'download' || downloadState === 'preparing' || downloadState === 'downloading'}
+          disabled={loadingAction === 'delete' || loadingAction === 'duplicate' || loadingAction === 'toggle'}
         >
-          {loadingAction === 'download' || downloadState === 'preparing' || downloadState === 'downloading' ? (
-            <ActivityIndicator size="small" color={theme.colors.primary} />
-          ) : downloadState === 'completed' ? (
-            <Feather name="check" size={16} color={theme.colors.success} />
+          {loadingAction === 'delete' ? (
+            <ActivityIndicator size="small" color={theme.colors.error} />
           ) : (
-            <Feather name="download" size={16} color={theme.colors.primary} />
+            <Feather name="trash-2" size={16} color={theme.colors.error} />
           )}
-          <Typography variant="caption" weight="medium" style={styles.actionText} numberOfLines={1} adjustsFontSizeToFit>
-            {downloadButtonText}
+          <Typography variant="caption" weight="medium" style={[styles.actionText, { color: theme.colors.error }]} numberOfLines={1} adjustsFontSizeToFit>
+            Delete
           </Typography>
         </TouchableOpacity>
+      )}
 
-        <TouchableOpacity 
-          style={styles.actionBtn}
-          onPress={() => onDuplicate(batch)}
-          accessibilityRole="button"
-          accessibilityLabel="Duplicate Batch"
-          hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
-          disabled={loadingAction === 'duplicate' || loadingAction === 'delete'}
-        >
-          {loadingAction === 'duplicate' ? (
-            <ActivityIndicator size="small" color={theme.colors.primary} />
-          ) : (
-            <Feather name="copy" size={16} color={theme.colors.primary} />
-          )}
-          <Typography variant="caption" weight="medium" style={styles.actionText} numberOfLines={1} adjustsFontSizeToFit>
-            Copy
-          </Typography>
-        </TouchableOpacity>
-
-        {onDelete && (
-          <TouchableOpacity 
-            style={[styles.actionBtn, { borderColor: theme.colors.error }]}
-            onPress={() => onDelete(batch)}
+      {onToggle && (
+          <TouchableOpacity
+            style={[styles.actionBtn, { borderColor: batch.status === 'ACTIVE' ? theme.colors.warning : theme.colors.success }]}
+            onPress={() => onToggle(batch)}
             accessibilityRole="button"
-            accessibilityLabel="Delete Batch"
+            accessibilityLabel={batch.status === 'ACTIVE' ? 'Deactivate Batch' : 'Activate Batch'}
             hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
-            disabled={loadingAction === 'delete' || loadingAction === 'duplicate'}
+            disabled={loadingAction === 'toggle' || loadingAction === 'delete' || loadingAction === 'duplicate'}
           >
-            {loadingAction === 'delete' ? (
-              <ActivityIndicator size="small" color={theme.colors.error} />
+            {loadingAction === 'toggle' ? (
+              <ActivityIndicator size="small" color={batch.status === 'ACTIVE' ? theme.colors.warning : theme.colors.success} />
             ) : (
-              <Feather name="trash-2" size={16} color={theme.colors.error} />
+              <Feather name={batch.status === 'ACTIVE' ? 'slash' : 'check-circle'} size={16} color={batch.status === 'ACTIVE' ? theme.colors.warning : theme.colors.success} />
             )}
-            <Typography variant="caption" weight="medium" style={[styles.actionText, { color: theme.colors.error }]} numberOfLines={1} adjustsFontSizeToFit>
-              Delete
+            <Typography variant="caption" weight="medium" style={[styles.actionText, { color: batch.status === 'ACTIVE' ? theme.colors.warning : theme.colors.success }]} numberOfLines={1} adjustsFontSizeToFit>
+              {batch.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
             </Typography>
           </TouchableOpacity>
         )}

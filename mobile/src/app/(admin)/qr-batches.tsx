@@ -23,6 +23,7 @@ import { useBarcodeBatchesQuery } from '../../hooks/useBarcodeBatchesQuery';
 import { useDuplicateBarcodeBatchMutation } from '../../hooks/useDuplicateBarcodeBatchMutation';
 import { useDeleteBarcodeBatchMutation } from '../../hooks/useDeleteBarcodeBatchMutation';
 import { useDownloadBatchPdfMutation } from '../../hooks/useDownloadBatchPdfMutation';
+import { useUpdateBarcodeBatchMutation } from '../../hooks/useUpdateBarcodeBatchMutation';
 import { ActivityIndicator, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 
@@ -56,6 +57,7 @@ export default function QRBatchesScreen() {
   // Mutations
   const duplicateMutation = useDuplicateBarcodeBatchMutation();
   const deleteMutation = useDeleteBarcodeBatchMutation();
+  const updateMutation = useUpdateBarcodeBatchMutation();
   const downloadMutation = useDownloadBatchPdfMutation();
 
   // Modal & Toast Architecture
@@ -129,6 +131,15 @@ export default function QRBatchesScreen() {
       }
     });
   }, [selectedBatchForDelete, deleteMutation, refetch]);
+
+  const handleToggleBatchStatus = useCallback((batch: QRBatch) => {
+    const nextStatus = batch.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    updateMutation.mutate({ id: batch.id, payload: { status: nextStatus } }, {
+      onSuccess: () => {
+        showToast('success', `Batch ${nextStatus === 'ACTIVE' ? 'activated' : 'deactivated'} successfully.`);
+      },
+    });
+  }, [showToast, updateMutation]);
 
   // Calculate bottom padding properly: Bottom Navigation (approx 76) + Safe Area + FAB + margin
   const bottomNavOffset = Math.max(insets.bottom + 12, 24);
@@ -312,13 +323,15 @@ export default function QRBatchesScreen() {
       onDownload={handleDownload}
       onDuplicate={handleDuplicate}
       onDelete={handleDelete}
+      onToggle={handleToggleBatchStatus}
       loadingAction={
         duplicateMutation.isPending && selectedBatchForDuplicate?.id === item.id ? 'duplicate' : 
-        deleteMutation.isPending && selectedBatchForDelete?.id === item.id ? 'delete' : null
+        deleteMutation.isPending && selectedBatchForDelete?.id === item.id ? 'delete' : 
+        updateMutation.isPending && updateMutation.variables?.id === item.id ? 'toggle' : null
       }
       downloadState={downloadMutation.isPending && downloadMutation.variables?.id === item.id ? 'downloading' : null}
     />
-  ), [handleViewDetails, handleDownload, handleDuplicate, handleDelete, duplicateMutation.isPending, deleteMutation.isPending, downloadMutation.isPending, downloadMutation.variables, selectedBatchForDuplicate, selectedBatchForDelete]);
+  ), [handleViewDetails, handleDownload, handleDuplicate, handleDelete, handleToggleBatchStatus, duplicateMutation.isPending, deleteMutation.isPending, downloadMutation.isPending, updateMutation.isPending, downloadMutation.variables, updateMutation.variables, selectedBatchForDuplicate, selectedBatchForDelete]);
 
   return (
     <ScreenWrapper preset="fixed" backgroundColor={theme.colors.background}>

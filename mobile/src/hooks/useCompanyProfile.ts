@@ -74,10 +74,11 @@ export const useCompanySettingsMutation = () => {
       if (previousProfile) {
         queryClient.setQueryData<CompanyProfile>(COMPANY_PROFILE_KEY, {
           ...previousProfile,
-          settings: {
-            ...previousProfile.notifications, // fallback mapping
-            ...newSettings
-          }
+          ...newSettings,
+          notifications: {
+            ...previousProfile.notifications,
+            ...newSettings.notifications,
+          },
         });
       }
       return { previousProfile };

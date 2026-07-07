@@ -1,5 +1,17 @@
 const { decrypt } = require('./crypto');
 
+function formatAddress(address) {
+  if (!address) return '';
+
+  if (typeof address === 'string') return address;
+
+  const { line1, line2, city, state, pincode, country } = address;
+
+  return [line1, line2, city, state, pincode, country]
+    .filter(Boolean)
+    .join(', ');
+}
+
 /**
  * Maps the Company and User objects into a normalized CompanyProfile response.
  * Safely masks the bank account and formats the data for the frontend.
@@ -31,7 +43,7 @@ function presentCompanyProfile(company, user) {
     verified: company.status === 'ACTIVE',
     email: company.email || '',
     phone: company.phone || '',
-    address: company.address || null,
+    address: formatAddress(company.address),
     gstNumber: company.gstNumber || '',
     createdAt: company.createdAt,
     upiId: upiId,

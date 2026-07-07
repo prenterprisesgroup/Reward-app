@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Modal, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Check, Building2, Package, Clock, Wallet, ChevronRight, ShieldCheck, Scan, Calendar, Sparkles, Star } from 'lucide-react-native';
+import { Check, Building2, Package, Clock, Wallet, ChevronRight, ShieldCheck, Scan, Calendar, Sparkles, Star, User } from 'lucide-react-native';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -178,7 +178,55 @@ export default function RewardSuccessBottomSheet({ visible, onClose, onScanAnoth
                   <Typography style={styles.rowLabel}>Product</Typography>
                 </View>
                 <View style={styles.rowRight}>
-                  <Typography style={styles.rowValue}>{rewardData?.productName || rewardData?.barcode?.batch?.productName || 'Unknown Product'}</Typography>
+                  <Typography style={styles.rowValue}>{rewardData?.productName || 'Unknown Product'}</Typography>
+                </View>
+              </View>
+              
+              <View style={styles.divider} />
+
+              <View style={styles.row}>
+                <View style={styles.rowLeft}>
+                  <View style={styles.iconCircle}>
+                    <User size={16} color={localTheme.colors.primary} />
+                  </View>
+                  <Typography style={styles.rowLabel}>Worker</Typography>
+                </View>
+                <View style={styles.rowRight}>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Typography style={styles.rowValue}>{rewardData?.workerName || 'You'}</Typography>
+                    <Typography style={styles.rowSubValue}>{rewardData?.workerPhone || '–'}</Typography>
+                  </View>
+                </View>
+              </View>
+              
+              <View style={styles.divider} />
+
+              <View style={styles.row}>
+                <View style={styles.rowLeft}>
+                  <View style={styles.iconCircle}>
+                    <Package size={16} color={localTheme.colors.primary} />
+                  </View>
+                  <Typography style={styles.rowLabel}>Batch</Typography>
+                </View>
+                <View style={styles.rowRight}>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Typography style={styles.rowValue}>{rewardData?.batchName || 'Unknown Batch'}</Typography>
+                    <Typography style={styles.rowSubValue}>{rewardData?.batchId ? `ID: ${rewardData.batchId}` : ''}</Typography>
+                  </View>
+                </View>
+              </View>
+              
+              <View style={styles.divider} />
+
+              <View style={styles.row}>
+                <View style={styles.rowLeft}>
+                  <View style={styles.iconCircle}>
+                    <ShieldCheck size={16} color={localTheme.colors.primary} />
+                  </View>
+                  <Typography style={styles.rowLabel}>Batch Status</Typography>
+                </View>
+                <View style={styles.rowRight}>
+                  <Typography style={styles.rowValue}>{rewardData?.batchStatus || 'UNKNOWN'}</Typography>
                 </View>
               </View>
               
@@ -382,6 +430,11 @@ const styles = StyleSheet.create({
     color: localTheme.colors.textPrimary,
     fontWeight: '600', // Pops more
     marginRight: 10,
+  },
+  rowSubValue: {
+    fontSize: 12,
+    color: localTheme.colors.textSecondary,
+    marginTop: 2,
   },
   walletValue: {
     fontSize: 15,

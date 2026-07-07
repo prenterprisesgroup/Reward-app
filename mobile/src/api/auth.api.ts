@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import { ENDPOINTS } from './endpoints';
 import { LoginFormData } from '../features/auth/schemas/loginSchema';
+import { RegisterFormData } from '../features/auth/schemas/registerSchema';
 import { User } from '../store/useAuthStore';
 
 interface LoginResponse {
@@ -27,6 +28,10 @@ interface PasswordResetCompleteData {
 export const authApi = {
   login: async (credentials: LoginFormData): Promise<LoginResponse> => {
     const response = await apiClient.post<LoginResponse>(ENDPOINTS.AUTH.LOGIN, credentials);
+    return response.data;
+  },
+  register: async (credentials: RegisterFormData): Promise<LoginResponse> => {
+    const response = await apiClient.post<LoginResponse>(ENDPOINTS.AUTH.REGISTER_WORKER, credentials);
     return response.data;
   },
   updateProfile: async (data: { name?: string; phone?: string; email?: string }): Promise<{ user: User }> => {

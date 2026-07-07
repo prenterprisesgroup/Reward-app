@@ -12,6 +12,7 @@ interface PaymentRequestCardProps {
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
   onDetails: (item: PendingWithdrawal) => void;
+  onPay: (item: PendingWithdrawal) => void;
 }
 
 const formatAmount = (num: number) => {
@@ -29,7 +30,7 @@ const formatDate = (dateStr: string) => {
   return d.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
-export const PaymentRequestCard = React.memo(({ item, index, onApprove, onReject, onDetails }: PaymentRequestCardProps) => {
+export const PaymentRequestCard = React.memo(({ item, index, onApprove, onReject, onDetails, onPay }: PaymentRequestCardProps) => {
   const isPending = item.status === 'PENDING';
   
   let statusColor = theme.colors.warning;
@@ -115,16 +116,29 @@ export const PaymentRequestCard = React.memo(({ item, index, onApprove, onReject
           </>
         ) : null}
 
-        <TouchableOpacity 
-          style={[styles.actionBtn, styles.detailsBtn, !isPending && { flex: 1 }]} 
-          onPress={() => onDetails(item)}
-          accessibilityRole="button"
-          accessibilityLabel="View Details"
-          hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
-        >
-          <Feather name="eye" size={16} color={theme.colors.textSecondary} />
-          <Typography style={styles.detailsText} weight="medium">Details</Typography>
-        </TouchableOpacity>
+        {item.status === 'APPROVED' ? (
+          <TouchableOpacity 
+            style={[styles.actionBtn, styles.payBtn]} 
+            onPress={() => onPay(item)}
+            accessibilityRole="button"
+            accessibilityLabel="Pay now"
+            hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
+          >
+            <Feather name="arrow-right-circle" size={16} color={theme.colors.primary} />
+            <Typography style={styles.payText} weight="medium">Pay</Typography>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity 
+            style={[styles.actionBtn, styles.detailsBtn, !isPending && { flex: 1 }]} 
+            onPress={() => onDetails(item)}
+            accessibilityRole="button"
+            accessibilityLabel="View Details"
+            hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
+          >
+            <Feather name="eye" size={16} color={theme.colors.textSecondary} />
+            <Typography style={styles.detailsText} weight="medium">Details</Typography>
+          </TouchableOpacity>
+        )}
       </View>
     </Animated.View>
   );
@@ -243,8 +257,16 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.background,
   },
+  payBtn: {
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primary + '10',
+  },
   detailsText: {
     color: theme.colors.textSecondary,
+    fontSize: 13,
+  },
+  payText: {
+    color: theme.colors.primary,
     fontSize: 13,
   },
 });

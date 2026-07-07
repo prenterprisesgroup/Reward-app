@@ -21,7 +21,6 @@ import { ConfirmationModal } from '../../components/ui/ConfirmationModal';
 import { Toast } from '../../components/ui/Toast';
 import { useToast } from '../../hooks/useToast';
 import { useCreateBarcodeBatchMutation } from '../../hooks/useCreateBarcodeBatchMutation';
-import { useKeyboardHeight } from '../../hooks/useKeyboardHeight'; // Assume we might need to create this or just rely on KeyboardAvoidingView and padding
 
 export default function CreateQRBatchScreen() {
   const insets = useSafeAreaInsets();
@@ -96,12 +95,16 @@ export default function CreateQRBatchScreen() {
   }, []);
 
   const handleCancelPress = useCallback(() => {
-    if (hasUnsavedChanges && !createMutation.isSuccess) {
+    // Don't allow going back while success or pending
+    if (createMutation.isPending || createMutation.isSuccess) {
+      return;
+    }
+    if (hasUnsavedChanges) {
       setCancelModalVisible(true);
     } else {
       router.back();
     }
-  }, [hasUnsavedChanges, createMutation.isSuccess]);
+  }, [hasUnsavedChanges, createMutation.isPending, createMutation.isSuccess]);
 
   const confirmCancel = useCallback(() => {
     setCancelModalVisible(false);
@@ -161,6 +164,26 @@ export default function CreateQRBatchScreen() {
               <View style={styles.notificationDot} />
             </TouchableOpacity>
           </View>
+
+          {/* Success Message */}
+          {createMutation.isSuccess && (
+            <Animated.View entering={FadeInUp} style={[styles.card, { backgroundColor: '#E8F5E9', borderColor: theme.colors.success, borderWidth: 1 }]}>
+              <View style={styles.successContainer}>
+                <View style={[styles.successIconBox, { backgroundColor: theme.colors.success + '20' }]}>
+                  <Feather name="check-circle" size={32} color={theme.colors.success} />
+                </View>
+                <View style={styles.successContent}>
+                  <Typography variant="title" weight="bold" style={{ color: theme.colors.success }}>Batch Created Successfully!</Typography>
+                  <Typography style={{ color: theme.colors.textSecondary, marginTop: 4 }}>
+                    Your QR batch has been generated and is ready to use.
+                  </Typography>
+                  <Typography variant="caption" style={{ color: theme.colors.textTertiary, marginTop: 8 }}>
+                    Batch Name: <Typography weight="bold" style={{ color: theme.colors.success }}>{form.batchName}</Typography>
+                  </Typography>
+                </View>
+              </View>
+            </Animated.View>
+          )}
 
           {/* Section 1: Batch Information */}
           <Animated.View entering={FadeInUp.delay(100).springify()} style={styles.card}>
@@ -359,32 +382,56 @@ export default function CreateQRBatchScreen() {
 
         {/* Sticky Footer */}
         <Animated.View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-          <TouchableOpacity 
-            style={[styles.primaryBtn, (!isFormValid || createMutation.isPending || createMutation.isSuccess) && styles.primaryBtnDisabled]}
-            onPress={handleGenerate}
-            disabled={!isFormValid || createMutation.isPending || createMutation.isSuccess}
-            accessibilityRole="button"
-          >
-            {createMutation.isPending ? (
-              <ActivityIndicator color="#fff" size="small" style={styles.btnIcon} />
-            ) : createMutation.isSuccess ? (
-              <Feather name="check" size={20} color="#fff" style={styles.btnIcon} />
-            ) : (
-              <MaterialCommunityIcons name="qrcode" size={20} color="#fff" style={styles.btnIcon} />
-            )}
-            <Typography weight="bold" style={styles.primaryBtnText}>
-              {createMutation.isPending ? 'Generating...' : createMutation.isSuccess ? 'Generated' : 'Generate QR Batch'}
-            </Typography>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.secondaryBtn, createMutation.isPending && styles.secondaryBtnDisabled]}
-            onPress={handleCancelPress}
-            disabled={createMutation.isPending || createMutation.isSuccess}
-            accessibilityRole="button"
-          >
-            <Typography weight="bold" style={styles.secondaryBtnText}>Cancel</Typography>
-          </TouchableOpacity>
+          {createMutation.isSuccess ? (
+            <>
+              <TouchableOpacity 
+                style={styles.primaryBtn}
+                onPress={() => router.push('/(admin)/qr-batches')}
+                accessibilityRole="button"
+              >
+                <Feather name="arrow-right" size={20} color="#fff" style={styles.btnIcon} />
+                <Typography weight="bold" style={styles.primaryBtnText}>View All Batches</Typography>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.secondaryBtn}
+                onPress={() => {
+                  resetForm();
+                  createMutation.reset?.();
+                }}
+                accessibilityRole="button"
+              >
+                <Typography weight="bold" style={styles.secondaryBtnText}>Create Another</Typography>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity 
+                style={[styles.primaryBtn, (!isFormValid || createMutation.isPending) && styles.primaryBtnDisabled]}
+                onPress={handleGenerate}
+                disabled={!isFormValid || createMutation.isPending}
+                accessibilityRole="button"
+              >
+                {createMutation.isPending ? (
+                  <ActivityIndicator color="#fff" size="small" style={styles.btnIcon} />
+                ) : (
+                  <MaterialCommunityIcons name="qrcode" size={20} color="#fff" style={styles.btnIcon} />
+                )}
+                <Typography weight="bold" style={styles.primaryBtnText}>
+                  {createMutation.isPending ? 'Generating...' : 'Generate QR Batch'}
+                </Typography>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.secondaryBtn, createMutation.isPending && styles.secondaryBtnDisabled]}
+                onPress={handleCancelPress}
+                disabled={createMutation.isPending}
+                accessibilityRole="button"
+              >
+                <Typography weight="bold" style={styles.secondaryBtnText}>Cancel</Typography>
+              </TouchableOpacity>
+            </>
+          )}
         </Animated.View>
       </KeyboardAvoidingView>
 
@@ -664,5 +711,21 @@ const styles = StyleSheet.create({
   secondaryBtnText: {
     color: theme.colors.textPrimary,
     fontSize: 16,
+  },
+  successContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 12,
+  },
+  successIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  successContent: {
+    flex: 1,
   },
 });

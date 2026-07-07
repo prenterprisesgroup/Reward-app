@@ -52,6 +52,29 @@ async function getOverview(req, res, next) {
   }
 }
 
+// Return a flat stats summary compatible with frontend RawDashboardStatsResponse
+async function getDashboardSummary(req, res, next) {
+  try {
+    const period = req.query.period || '30d';
+    const stats = await AnalyticsService.getStats(period);
+
+    // Map internal stats keys to legacy response shape expected by mobile
+    const payload = {
+      totalCompanies: stats.totalCompanies || 0,
+      approvedCompanies: 0,
+      totalLabour: stats.totalWorkers || 0,
+      totalQrGenerated: stats.qrCodesGenerated || 0,
+      totalQrRedeemed: stats.qrCodesRedeemed || 0,
+      totalRewardsDistributed: stats.rewardsDistributed || 0,
+      pendingWithdrawals: stats.pendingWithdrawals || 0,
+    };
+
+    res.json(payload);
+  } catch (error) {
+    next(error);
+  }
+}
+
 // Keeping existing endpoints for backward compatibility
 async function getTrends(req, res, next) {
   try {
@@ -114,5 +137,30 @@ module.exports = {
   getOverview,
   getTrends,
   getGrowth,
-  getTopCompanies
+  getTopCompanies,
+  // Backwards compatible endpoints used by super-admin mobile
+  getDashboardSummary: getDashboardSummary,
+  getRecentActivity: async function(req, res, next) {
+    try {
+      const AnalyticsService = require('../services/analytics.service');
+      const page = Math.max(1, parseInt(req.query.page || '1', 10));
+      const limit = Math.min(50, Math.max(1, parseInt(req.query.limit || '20', 10)));
+      const result = await AnalyticsService.getGlobalRecentActivity(page, limit);
+
+      // Wrap into paginated pages array expected by frontend
+      const payload = {
+        pages: [
+          { items: result.items }
+        ],
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        hasNextPage: result.hasNextPage
+      };
+
+      res.json({ success: true, data: payload, meta: { page, limit } });
+    } catch (error) {
+      next(error);
+    }
+  }
 };

@@ -14,6 +14,8 @@ router.use(authorizeRoles(ROLES.SUPER_ADMIN));
 router.get('/overview', analyticsController.getOverview);
 router.get('/trends', analyticsController.getTrends);
 router.get('/growth', analyticsController.getGrowth);
+router.get('/dashboard', analyticsController.getDashboardSummary);
+router.get('/activity', analyticsController.getRecentActivity);
 router.get('/top-companies', analyticsController.getTopCompanies);
 
 module.exports = router;

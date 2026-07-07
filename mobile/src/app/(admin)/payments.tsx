@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, TextInput, Modal, Pressable } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, TextInput, Modal, Pressable, Linking } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, { FadeIn, SlideInDown, SlideOutDown, useAnimatedStyle, withTiming, FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -107,15 +107,39 @@ export default function PaymentsScreen() {
     }
   }, [confirmModal, approveMutation, rejectMutation, showToast]);
 
+  const handlePayPress = useCallback((item: PendingWithdrawal) => {
+    const upi = item.upiId?.trim();
+    const amount = item.amount || 0;
+    if (!upi || amount <= 0) {
+      showToast('Invalid payment details. Please verify UPI and amount.', 'error');
+      return;
+    }
+
+    const url = `upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodeURIComponent(item.worker?.name || 'Worker')}&am=${amount.toFixed(2)}&cu=INR`;
+
+    Linking.canOpenURL(url)
+      .then((supported) => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          showToast('No UPI app found on this device.', 'error');
+        }
+      })
+      .catch(() => {
+        showToast('Unable to launch UPI app.', 'error');
+      });
+  }, [showToast]);
+
   const renderItem = useCallback(({ item, index }: { item: PendingWithdrawal, index: number }) => (
     <PaymentRequestCard 
       item={item} 
       index={index} 
       onApprove={handleApprovePress} 
       onReject={handleRejectPress} 
-      onDetails={handleDetailsPress} 
+      onDetails={handleDetailsPress}
+      onPay={handlePayPress}
     />
-  ), [handleApprovePress, handleRejectPress, handleDetailsPress]);
+  ), [handleApprovePress, handleRejectPress, handleDetailsPress, handlePayPress]);
 
   const renderFooter = useCallback(() => (
     isFetchingNextPage ? <ActivityIndicator size="small" color={theme.colors.primary} style={{ padding: 16 }} /> : null

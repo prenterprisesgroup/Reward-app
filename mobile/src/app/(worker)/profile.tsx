@@ -280,8 +280,8 @@ const styles = StyleSheet.create({
   helpCardContent: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' },
   helpCardTitle: { fontSize: 12, fontWeight: '600', color: theme.colors.textPrimary, marginLeft: 6, marginRight: 4 },
 
-  logoutCard: { backgroundColor: '#FFF0F0', borderColor: '#FFE0E0', borderWidth: 1 },
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20 },
+  logoutCard: { backgroundColor: '#FFF0F0', borderColor: '#FFE0E0', borderWidth: 1 ,  marginBottom: 60},
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10 },
   logoutBtnLeft: { flexDirection: 'row', alignItems: 'center' },
   logoutTitle: { fontSize: 16, fontWeight: '700', color: theme.colors.error, marginBottom: 2 },
   logoutSubtitle: { fontSize: 12, color: '#FF8A8A' }

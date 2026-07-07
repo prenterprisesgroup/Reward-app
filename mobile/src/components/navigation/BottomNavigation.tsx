@@ -76,7 +76,7 @@ export function BottomNavigation({ isAdmin = false }: BottomNavigationProps) {
   };
 
   return (
-    <View style={[styles.bottomNavWrapper, { bottom: bottomSpacing }]}>
+    <View style={styles.bottomNavWrapper}>
       <View style={styles.bottomNavContainer}>
         {isAdmin ? (
           <>
@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
+    bottom: 0,
     alignItems: 'center',
     zIndex: 9999,
     elevation: 20,
@@ -126,19 +127,18 @@ const styles = StyleSheet.create({
   bottomNavContainer: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    borderRadius: 999,
+    borderRadius: 0,
     height: 76,
-    width: '92%',
-    paddingHorizontal: 8,
+    width: '100%',
+    paddingHorizontal: 0,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    shadowColor: '#E5E7EB',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.8,
-    shadowRadius: 24,
+    justifyContent: 'space-around',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
     elevation: 10,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderWidth: 0,
   },
   navItem: {
     flex: 1,

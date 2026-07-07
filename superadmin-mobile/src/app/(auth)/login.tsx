@@ -176,7 +176,7 @@ export default function LoginScreen() {
                 <Typography variant="body" color="textSecondary">
                   Don't have an account?{' '}
                 </Typography>
-                <Pressable hitSlop={12}>
+                <Pressable hitSlop={12} onPress={() => router.push('/(auth)/register')}>
                   <Typography variant="body" color="accent" weight="semiBold">
                     Create Worker Account
                   </Typography>

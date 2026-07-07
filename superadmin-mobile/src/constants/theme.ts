@@ -18,13 +18,20 @@ export const colors = {
   disabledSurface: '#F0F2F1',
   overlay: 'rgba(47, 58, 54, 0.4)',
   success: '#34C759',
+  successDark: '#2EAD4E',
+  successLight: '#DFF5E6',
   successBackground: '#E8F5E9',
   warning: '#FF9500',
+  warningDark: '#D48A00',
+  warningLight: '#FFF0D6',
   warningBackground: '#FFF3E0',
   error: '#FF3B30',
+  errorLight: '#FFB3AF',
   errorBackground: '#FFEBEE',
   info: '#007AFF',
   infoBackground: '#E3F2FD',
+  secondaryDark: '#D1D9D5',
+  text: '#2F3A36',
 };
 
 export const typography = {
@@ -114,6 +121,7 @@ export const theme = {
   typography,
   spacing,
   radius,
+  borderRadius: radius,
   sizes,
   shadows,
 };

@@ -312,7 +312,7 @@ async function scanBarcode(req, res, next) {
       { new: true, session }
     )
       .populate({ path: 'company', select: 'name' })
-      .populate({ path: 'batch', select: 'productName' });
+      .populate({ path: 'batch', select: 'productName batchId status' });
 
     if (!barcode) {
       throw new HttpError(400, "Barcode is invalid, expired, or already redeemed");
@@ -349,6 +349,11 @@ async function scanBarcode(req, res, next) {
       },
       companyName: barcode.company?.name || company.name || 'Unknown Company',
       productName: barcode.batch?.productName || 'Unknown Product',
+      batchName: barcode.batch?.productName || 'Unknown Batch',
+      batchId: barcode.batch?.batchId || '',
+      batchStatus: barcode.batch?.status || 'UNKNOWN',
+      workerName: worker.name,
+      workerPhone: worker.phone,
       rewardAmount: barcode.rewardAmount,
       newWalletBalance: worker.walletBalance,
       walletBalance: worker.walletBalance,

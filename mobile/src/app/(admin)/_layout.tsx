@@ -11,6 +11,10 @@ export default function AdminLayout() {
       <Tabs.Screen name="qr-batches" />
       <Tabs.Screen name="payments" />
       <Tabs.Screen name="profile" />
+      <Tabs.Screen 
+        name="create-qr-batch" 
+        options={{ href: null, unmountOnBlur: false }}
+      />
     </Tabs>
   );
 }

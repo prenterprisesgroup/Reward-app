@@ -17,7 +17,8 @@ export const dashboardApi = {
       params: { limit },
       signal 
     });
-    return response.data;
+    // analytics.controller returns { success, data: { pages: [...] }, meta }
+    return (response.data as any).data;
   },
 
   getPendingWithdrawals: async (signal?: AbortSignal): Promise<RawPendingWithdrawalsResponse> => {

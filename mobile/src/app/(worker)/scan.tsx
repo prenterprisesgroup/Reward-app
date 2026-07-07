@@ -104,8 +104,7 @@ export default function WorkerScanQRScreen() {
     
     try {
       const response = await mutateAsync({ code: sanitizedCode, idempotencyKey: `scan-${Date.now()}-${Math.random().toString(36).slice(2, 10)}` });
-      // Success
-      setRewardData(response as any); // Type assertion assuming backend matches ScanResponseData
+      setRewardData(response);
       setShowSuccessModal(true);
       // We don't reset isScanningRef.current here; it remains true so the scanner is paused.
       // It resets when user taps "Scan Another QR"

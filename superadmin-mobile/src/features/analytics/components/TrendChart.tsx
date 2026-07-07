@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { LineChart } from 'react-native-gifted-charts';
+import { LineChart } from 'react-native-gifted-charts/dist/LineChart';
 import { useAnalyticsTrendsQuery } from '../hooks/useAnalytics';
 import { theme } from '../../../constants/theme';
 

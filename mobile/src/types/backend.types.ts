@@ -33,6 +33,11 @@ export interface WalletData {
 export interface ScanResponseData {
   companyName: string;
   productName: string;
+  batchName: string;
+  batchId: string;
+  batchStatus: string;
+  workerName: string;
+  workerPhone: string;
   rewardAmount: number;
   newWalletBalance: number;
   timestamp: string;

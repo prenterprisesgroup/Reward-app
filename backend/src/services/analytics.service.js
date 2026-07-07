@@ -297,6 +297,71 @@ class AnalyticsService {
 
     return { data, modules, warnings };
   }
+
+  // Provide a lightweight global recent activity aggregation for super-admin
+  static async getGlobalRecentActivity(page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+
+    // Fetch recent wallet transactions and withdrawals globally
+    const transactions = await WalletTransaction.find({})
+      .sort({ createdAt: -1 })
+      .limit(page * limit)
+      .populate('worker', 'name profilePhoto')
+      .populate('company', 'name')
+      .populate('barcode', 'batch')
+      .lean();
+
+    const withdrawals = await WithdrawalRequest.find({})
+      .sort({ createdAt: -1 })
+      .limit(page * limit)
+      .populate('worker', 'name profilePhoto')
+      .populate('company', 'name')
+      .lean();
+
+    const batchIds = [...new Set(transactions.map(t => t.barcode?.batch).filter(Boolean))];
+    const batches = await BarcodeBatch.find({ _id: { $in: batchIds } }).select('batchName').lean();
+    const batchMap = batches.reduce((acc, b) => ({ ...acc, [b._id.toString()]: b }), {});
+
+    const formattedTransactions = transactions.map(t => {
+      const isBarcodeReward = t.type === 'BARCODE_REWARD' || t.type === 'REWARD' || (t.type && t.type.toString().toUpperCase().includes('REWARD'));
+      return {
+        id: t._id.toString(),
+        type: isBarcodeReward ? 'BARCODE_REWARD' : (t.type || 'QR_SCAN'),
+        worker: t.worker?.name || null,
+        workerAvatar: t.worker?.profilePhoto || null,
+        amount: Number(t.amount) || 0,
+        batch: t.barcode?.batch ? (batchMap[t.barcode.batch.toString()]?.batchName || 'Unknown') : null,
+        timestamp: t.createdAt,
+        status: t.status,
+        company: t.company?.name || (t.company || null),
+      };
+    });
+
+    const formattedWithdrawals = withdrawals.map(w => ({
+      id: w._id.toString(),
+      type: 'WITHDRAW_REQUEST',
+      worker: w.worker?.name || null,
+      workerAvatar: w.worker?.profilePhoto || null,
+      amount: Number(w.amount) || 0,
+      batch: w.upiId || null,
+      timestamp: w.createdAt,
+      status: w.status,
+      company: w.company?.name || (w.company || null)
+    }));
+
+    let allItems = [...formattedTransactions, ...formattedWithdrawals];
+    allItems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    const paginatedItems = allItems.slice(skip, skip + limit);
+
+    return {
+      items: paginatedItems,
+      page,
+      limit,
+      total: allItems.length,
+      hasNextPage: skip + limit < allItems.length
+    };
+  }
 }
 
 module.exports = AnalyticsService;

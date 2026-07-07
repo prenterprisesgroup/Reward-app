@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useAnalyticsTrendsQuery } from '../hooks/useAnalytics';
 import { theme } from '../../../constants/theme';
-import { LineChart } from 'react-native-gifted-charts';
+import { LineChart } from 'react-native-gifted-charts/dist/LineChart';
 
 export const GrowthChart = memo(() => {
   const { data, isLoading, isError } = useAnalyticsTrendsQuery('monthly');

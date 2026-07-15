@@ -4,11 +4,11 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ArrowLeft, Bell, Wallet, ChevronRight, Clock, Info, QrCode, Building2 } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { BottomNavigation } from '../../components/navigation/BottomNavigation';
+import { WorkerBottomNavigation } from '../../components/navigation/worker/WorkerBottomNavigation';
 import { theme } from '../../constants/theme';
 import { Typography } from '../../components/common/Typography';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useWalletQuery } from '../../hooks/useWalletQuery';
+import { useWalletQuery, useWalletInfiniteQuery } from '../../hooks/useWalletQuery';
 import { ActivityIndicator } from 'react-native';
 
 export default function WalletScreen() {
@@ -16,14 +16,31 @@ export default function WalletScreen() {
   const insets = useSafeAreaInsets();
   const bottomSpacing = Math.max(insets.bottom + 12, 24);
 
-  const { data: walletData, isLoading: isLoadingWallet } = useWalletQuery();
+  const { data: walletData, isLoading: isLoadingWallet, refetch: refetchWallet } = useWalletQuery();
+  const { 
+    data: transactionsData, 
+    isLoading: isTransactionsLoading, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage, 
+    refetch: refetchTransactions 
+  } = useWalletInfiniteQuery('transactions', 15);
 
-  const transactions = Array.isArray(walletData?.transactions) ? walletData.transactions : [];
   const companies = Array.isArray(walletData?.companyBalances) ? walletData.companyBalances : [];
 
-  const displayTransactions = useMemo(() => {
-    return transactions.slice(0, 10);
-  }, [transactions]);
+  const transactions = useMemo(() => {
+    return transactionsData?.pages.flatMap((page) => page.data) || [];
+  }, [transactionsData]);
+
+  const handleRefresh = async () => {
+    await Promise.all([refetchWallet(), refetchTransactions()]);
+  };
+
+  const handleEndReached = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
 
   const renderTransaction = useCallback(({ item: tx }: { item: any }) => (
     <TouchableOpacity key={tx.id} style={styles.txRow} accessible={true} accessibilityRole="button">
@@ -50,132 +67,166 @@ export default function WalletScreen() {
     </TouchableOpacity>
   ), []);
 
-  return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+  const renderHeader = () => (
+    <View style={styles.scrollContent}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessible={true} accessibilityRole="button" accessibilityLabel="Go back">
+          <ArrowLeft size={20} color={theme.colors.textPrimary} />
+        </TouchableOpacity>
         
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessible={true} accessibilityRole="button" accessibilityLabel="Go back">
-            <ArrowLeft size={20} color={theme.colors.textPrimary} />
-          </TouchableOpacity>
+        <View style={styles.headerTitleContainer}>
+          <Typography style={styles.headerTitle}>My Wallet</Typography>
+          <Typography style={styles.headerSubtitle}>View your available rewards.</Typography>
+        </View>
+        
+        <TouchableOpacity style={styles.iconBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessible={true} accessibilityRole="button" accessibilityLabel="Notifications">
+          <Bell size={20} color={theme.colors.textPrimary} />
+          <View style={styles.notificationDot} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Hero Wallet Card */}
+      <View style={styles.heroCard}>
+        <View style={styles.heroContent}>
+          <Typography style={styles.heroLabel}>Total Reward Balance</Typography>
+          {isLoadingWallet ? (
+            <ActivityIndicator size="small" color={theme.colors.primary} style={{ alignSelf: 'flex-start', marginVertical: 12 }} />
+          ) : (
+            <Typography style={styles.heroBalance}>₹{(walletData?.walletBalance || 0).toLocaleString('en-IN')}</Typography>
+          )}
           
-          <View style={styles.headerTitleContainer}>
-            <Typography style={styles.headerTitle}>My Wallet</Typography>
-            <Typography style={styles.headerSubtitle}>View your available rewards.</Typography>
+          <View style={styles.availablePill}>
+            <View style={styles.availableDot} />
+            <Typography style={styles.availablePillText}>Total Earnings</Typography>
           </View>
-          
-          <TouchableOpacity style={styles.iconBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessible={true} accessibilityRole="button" accessibilityLabel="Notifications">
-            <Bell size={20} color={theme.colors.textPrimary} />
-            <View style={styles.notificationDot} />
-          </TouchableOpacity>
-        </View>
 
-        {/* Hero Wallet Card */}
-        <View style={styles.heroCard}>
-          <View style={styles.heroContent}>
-            <Typography style={styles.heroLabel}>Total Reward Balance</Typography>
-            {isLoadingWallet ? (
-              <ActivityIndicator size="small" color={theme.colors.primary} style={{ alignSelf: 'flex-start', marginVertical: 12 }} />
-            ) : (
-              <Typography style={styles.heroBalance}>₹{(walletData?.walletBalance || 0).toLocaleString('en-IN')}</Typography>
-            )}
-            
-            <View style={styles.availablePill}>
-              <View style={styles.availableDot} />
-              <Typography style={styles.availablePillText}>Total Earnings</Typography>
-            </View>
-
-            <View style={styles.lastUpdatedRow}>
-              <Typography style={styles.lastUpdatedText}>Last Updated: {walletData?.lastUpdated ? new Date(walletData.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}</Typography>
-              <Feather name="refresh-cw" size={12} color={theme.colors.textSecondary} />
-            </View>
-          </View>
-          <View style={styles.heroIllustrationWrapper}>
-            <Image source={require('../../../assets/images/wallet_hero.png')} style={styles.heroIllustration} contentFit="contain" />
+          <View style={styles.lastUpdatedRow}>
+            <Typography style={styles.lastUpdatedText}>Last Updated: {walletData?.lastUpdated ? new Date(walletData.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}</Typography>
+            <Feather name="refresh-cw" size={12} color={theme.colors.textSecondary} />
           </View>
         </View>
-
-        {/* Company Cards Section */}
-        <View style={styles.sectionHeader}>
-          <Typography style={styles.sectionTitle}>Company Balances</Typography>
+        <View style={styles.heroIllustrationWrapper}>
+          <Image source={require('../../../assets/images/wallet_hero.png')} style={styles.heroIllustration} contentFit="contain" />
         </View>
+      </View>
 
-        {isLoadingWallet ? (
-          <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginVertical: 32 }} />
-        ) : companies.length > 0 ? (
-          companies.map((company: any) => (
-            <View key={company._id} style={styles.companyCard}>
-              <View style={styles.companyHeader}>
-                <View style={styles.companyLogo}>
-                  <Building2 size={20} color={theme.colors.primary} />
-                </View>
-                <View style={styles.companyInfo}>
-                  <Typography style={styles.companyName}>{company.name}</Typography>
-                  <Typography style={styles.companyBalanceLabel}>Available Balance</Typography>
-                  <Typography style={styles.companyBalanceValue}>₹{company.balance.toLocaleString('en-IN')}</Typography>
-                </View>
+      {/* Company Cards Section */}
+      <View style={styles.sectionHeader}>
+        <Typography style={styles.sectionTitle}>Company Balances</Typography>
+      </View>
+
+      {isLoadingWallet ? (
+        <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginVertical: 32 }} />
+      ) : companies.length > 0 ? (
+        companies.map((company: any) => (
+          <View key={company._id} style={styles.companyCard}>
+            <View style={styles.companyHeader}>
+              <View style={styles.companyLogo}>
+                <Building2 size={20} color={theme.colors.primary} />
               </View>
-
-              <TouchableOpacity 
-                style={styles.companyWithdrawBtn} 
-                onPress={() => router.push({
-                  pathname: '/(worker)/withdraw',
-                  params: {
-                    companyId: company._id,
-                    companyName: company.name,
-                    availableBalance: company.balance.toString()
-                  }
-                })}
-              >
-                <View style={styles.withdrawBtnContent}>
-                  <Wallet size={16} color="#FFF" style={{ marginRight: 8 }} />
-                  <Typography style={styles.withdrawBtnText}>Withdraw</Typography>
-                </View>
-                <ChevronRight size={16} color="#FFF" />
-              </TouchableOpacity>
+              <View style={styles.companyInfo}>
+                <Typography style={styles.companyName}>{company.name}</Typography>
+                <Typography style={styles.companyBalanceLabel}>Available Balance</Typography>
+                <Typography style={styles.companyBalanceValue}>₹{company.balance.toLocaleString('en-IN')}</Typography>
+              </View>
             </View>
-          ))
-        ) : (
-          <View style={styles.emptyCard}>
-            <Typography style={styles.emptyDesc}>No company balances found.</Typography>
-          </View>
-        )}
 
-        {/* Recent Rewards Header */}
-        <View style={styles.sectionHeader}>
-          <Typography style={styles.sectionTitle}>Recent Rewards</Typography>
-        </View>
-
-        {/* Transactions List or Empty State */}
-        {transactions.length > 0 ? (
-          <View style={styles.transactionsContainer}>
-            <FlatList 
-              data={displayTransactions}
-              keyExtractor={(item) => item.id?.toString() || `tx-${Math.random()}`}
-              renderItem={renderTransaction}
-              scrollEnabled={false}
-              showsVerticalScrollIndicator={false}
-            />
-          </View>
-        ) : (
-          <View style={styles.emptyCard}>
-            <Image source={require('../../../assets/images/qr_box_empty.png')} style={styles.emptyIllustration} contentFit="contain" />
-            <View style={styles.emptyContent}>
-              <Typography style={styles.emptyTitle}>No Rewards Yet</Typography>
-              <Typography style={styles.emptyDesc}>Start scanning eligible product QR codes to earn rewards.</Typography>
-            </View>
-            <TouchableOpacity style={styles.emptyBtn} accessible={true} accessibilityRole="button">
-              <QrCode size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-              <Typography style={styles.emptyBtnText}>Scan QR to Earn</Typography>
+            <TouchableOpacity 
+              style={styles.companyWithdrawBtn} 
+              onPress={() => router.push({
+                pathname: '/(worker)/withdraw',
+                params: {
+                  companyId: company._id,
+                  companyName: company.name,
+                  availableBalance: company.balance.toString()
+                }
+              })}
+            >
+              <View style={styles.withdrawBtnContent}>
+                <Wallet size={16} color="#FFF" style={{ marginRight: 8 }} />
+                <Typography style={styles.withdrawBtnText}>Withdraw</Typography>
+              </View>
+              <ChevronRight size={16} color="#FFF" />
             </TouchableOpacity>
           </View>
-        )}
+        ))
+      ) : (
+        <View style={styles.emptyCard}>
+          <Typography style={styles.emptyDesc}>No company balances found.</Typography>
+        </View>
+      )}
 
-        <View style={styles.bottomPadding} />
-      </ScrollView>
-      {/* Unified Bottom Navigation */}
-      <BottomNavigation />
+      {/* Recent Rewards Header */}
+      <View style={[styles.sectionHeader, { marginTop: 16 }]}>
+        <Typography style={styles.sectionTitle}>Recent Rewards</Typography>
+      </View>
+    </View>
+  );
+
+  const renderEmpty = () => {
+    if (isTransactionsLoading) {
+      return <ActivityIndicator size="large" color={theme.colors.primary} style={{ marginVertical: 32 }} />;
+    }
+    return (
+      <View style={[styles.emptyCard, { marginHorizontal: 24, marginBottom: 24 }]}>
+        <Image source={require('../../../assets/images/qr_box_empty.png')} style={styles.emptyIllustration} contentFit="contain" />
+        <View style={styles.emptyContent}>
+          <Typography style={styles.emptyTitle}>No Rewards Yet</Typography>
+          <Typography style={styles.emptyDesc}>Start scanning eligible product QR codes to earn rewards.</Typography>
+        </View>
+        <TouchableOpacity style={styles.emptyBtn} accessible={true} accessibilityRole="button">
+          <QrCode size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+          <Typography style={styles.emptyBtnText}>Scan QR to Earn</Typography>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderFooter = () => {
+    if (isFetchingNextPage) {
+      return <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginVertical: 16 }} />;
+    }
+    if (!hasNextPage && transactions.length > 0) {
+      return (
+        <View style={{ alignItems: 'center', paddingVertical: 16 }}>
+          <Typography style={{ color: theme.colors.textSecondary, fontSize: 12 }}>No more records</Typography>
+        </View>
+      );
+    }
+    return <View style={styles.bottomPadding} />;
+  };
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
+      <FlatList
+        data={transactions}
+        keyExtractor={(item) => item._id || item.id?.toString() || `tx-${Math.random()}`}
+        renderItem={renderTransaction}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmpty}
+        ListFooterComponent={renderFooter}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
+        
+        // Enterprise FlatList Performance Props
+        removeClippedSubviews={true}
+        windowSize={5}
+        maxToRenderPerBatch={10}
+        initialNumToRender={10}
+        
+        // Infinite Scrolling
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.5}
+        
+        // Pull to refresh
+        refreshing={isLoadingWallet && !isFetchingNextPage}
+        onRefresh={handleRefresh}
+        
+        style={styles.listContainer}
+      />
+
+      <WorkerBottomNavigation />
     </SafeAreaView>
   );
 }
@@ -184,6 +235,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8F8F6',
+  },
+  listContainer: {
+    flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 24,
@@ -483,6 +537,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginHorizontal: 24,
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.borderLight,
   },

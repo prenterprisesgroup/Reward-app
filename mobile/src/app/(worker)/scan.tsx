@@ -10,7 +10,7 @@ import { Typography } from '../../components/common/Typography';
 import { Image } from 'expo-image';
 import RewardSuccessBottomSheet from '../../components/scanner/RewardSuccessBottomSheet';
 import { useRouter } from 'expo-router';
-import { BottomNavigation } from '../../components/navigation/BottomNavigation';
+import { WorkerBottomNavigation } from '../../components/navigation/worker/WorkerBottomNavigation';
 import { useWalletQuery } from '../../hooks/useWalletQuery';
 import { useScanQRMutation } from '../../hooks/useScanQRMutation';
 import { ScanResponseData } from '../../types/backend.types';
@@ -38,6 +38,7 @@ export default function WorkerScanQRScreen() {
   const [toastMsg, setToastMsg] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
 
   const { data: walletData, isLoading: isLoadingWallet, isError: isWalletError } = useWalletQuery();
+  const { data: latestRewardData, isLoading: isLoadingReward } = useWalletQuery({ section: 'transactions', page: 1, limit: 1 });
   const { mutateAsync, isPending } = useScanQRMutation();
 
   // Animations
@@ -277,28 +278,40 @@ export default function WorkerScanQRScreen() {
 
           <View style={styles.twoColumnGrid}>
             {/* Last Reward Earned */}
-            <TouchableOpacity style={styles.gridCard} accessible={true} accessibilityRole="button" hitSlop={hitSlop}>
+            <TouchableOpacity style={styles.gridCard} onPress={() => router.push('/(worker)/wallet')} accessible={true} accessibilityRole="button" hitSlop={hitSlop}>
               <View style={styles.gridCardHeader}>
                 <Typography style={styles.gridCardTitle}>Last Reward Earned</Typography>
                 <ChevronRight size={14} color={theme.colors.placeholder} />
               </View>
               <View style={styles.rewardCardContent}>
-                {/* Top Row: Logo & Name */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                  <Image source={require('../../../assets/images/avatar.png')} style={styles.companyLogo} />
-                  <View style={styles.rewardCardText}>
-                    <Typography style={styles.companyName} numberOfLines={1}>Nestlé India</Typography>
-                    <Typography style={styles.rewardTime}>2 mins ago</Typography>
-                  </View>
-                </View>
-                
-                {/* Bottom Row: Amount & Badge */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography style={styles.rewardAmount}>+₹100</Typography>
-                  <View style={styles.completedBadge}>
-                    <Typography style={styles.completedBadgeText}>Completed</Typography>
-                  </View>
-                </View>
+                {isLoadingReward ? (
+                  <Typography style={{ color: theme.colors.textSecondary, fontSize: 12 }}>Loading...</Typography>
+                ) : latestRewardData?.data?.[0] ? (
+                  <>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                      <View style={[styles.companyLogo, { backgroundColor: theme.colors.borderLight, justifyContent: 'center', alignItems: 'center' }]}>
+                        <Typography style={{ fontSize: 12, fontWeight: 'bold', color: theme.colors.textSecondary }}>
+                          {(latestRewardData.data[0].companyName || 'R').charAt(0).toUpperCase()}
+                        </Typography>
+                      </View>
+                      <View style={styles.rewardCardText}>
+                        <Typography style={styles.companyName} numberOfLines={1}>{latestRewardData.data[0].companyName || 'Reward'}</Typography>
+                        <Typography style={styles.rewardTime}>{new Date(latestRewardData.data[0].createdAt).toLocaleDateString()}</Typography>
+                      </View>
+                    </View>
+                    
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography style={styles.rewardAmount}>+₹{latestRewardData.data[0].amount}</Typography>
+                      <View style={[styles.completedBadge, latestRewardData.data[0].status === 'PENDING' ? { backgroundColor: theme.colors.warningBackground } : undefined]}>
+                        <Typography style={[styles.completedBadgeText, latestRewardData.data[0].status === 'PENDING' ? { color: theme.colors.warning } : undefined]}>
+                          {latestRewardData.data[0].status ? latestRewardData.data[0].status.charAt(0).toUpperCase() + latestRewardData.data[0].status.slice(1).toLowerCase() : 'Completed'}
+                        </Typography>
+                      </View>
+                    </View>
+                  </>
+                ) : (
+                  <Typography style={{ color: theme.colors.textSecondary, fontSize: 12 }}>No rewards yet</Typography>
+                )}
               </View>
             </TouchableOpacity>
 
@@ -393,7 +406,7 @@ export default function WorkerScanQRScreen() {
           router.replace('/(worker)/wallet');
         }}
       />
-      <BottomNavigation />
+      <WorkerBottomNavigation />
     </SafeAreaView>
   );
 }
@@ -749,6 +762,56 @@ const styles = StyleSheet.create({
     lineHeight: 16, // Enhanced typography
   },
 
+  // Missing Scan Guidelines Styles
+  divider: {
+    height: 1,
+    backgroundColor: '#F0F0F0',
+    marginVertical: 16,
+  },
+  guidelinesSection: {
+    marginTop: 8,
+  },
+  guidelinesTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: theme.colors.textPrimary,
+    marginBottom: 16,
+  },
+  guidelineItem: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    alignItems: 'flex-start',
+  },
+  guidelineIconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F3F7F4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  guidelineTextContent: {
+    flex: 1,
+  },
+  guidelineHeading: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: theme.colors.textPrimary,
+    marginBottom: 4,
+  },
+  guidelineDesc: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    lineHeight: 16,
+  },
+  guidelineLink: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: theme.colors.primary,
+    marginTop: 4,
+  },
+
   // Bottom Navigation
   bottomNavWrapper: {
     position: 'absolute',
@@ -801,3 +864,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+export function ErrorBoundary({ error, retry }: any) {
+  return (
+    <SafeAreaView style={[styles.container, styles.centerAll, { padding: 24 }]}>
+      <ShieldCheck size={48} color={theme.colors.error} style={{ marginBottom: 16 }} />
+      <Typography style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>Scanner Error</Typography>
+      <Typography style={{ color: theme.colors.textSecondary, textAlign: 'center', marginBottom: 24 }}>{error.message}</Typography>
+      <TouchableOpacity style={styles.permissionBtn} onPress={retry}>
+        <Typography style={{ color: '#FFF', fontWeight: 'bold' }}>Try Again</Typography>
+      </TouchableOpacity>
+    </SafeAreaView>
+  );
+}

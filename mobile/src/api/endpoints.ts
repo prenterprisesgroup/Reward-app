@@ -15,6 +15,10 @@ export const ENDPOINTS = {
     WALLET_UPI: '/api/v1/system/wallet/upi',
     BARCODE_SCAN: '/api/v1/system/scan',
     WITHDRAW: '/api/v1/system/withdrawals',
+    NOTIFICATIONS: '/api/v1/notifications',
+    NOTIFICATIONS_READ_ALL: '/api/v1/notifications/read-all',
+    NOTIFICATIONS_READ: (id: string) => `/api/v1/notifications/${id}/read`,
+    NOTIFICATIONS_DELETE: (id: string) => `/api/v1/notifications/${id}`,
   },
   ADMIN: {
     DASHBOARD_STATS: '/api/v1/system/dashboard/stats',

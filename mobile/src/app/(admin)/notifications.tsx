@@ -5,7 +5,6 @@ import { Typography } from '../../components/common/Typography';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
-import { WorkerBottomNavigation } from '../../components/navigation/worker/WorkerBottomNavigation';
 import { NotificationCard } from '../../components/cards/NotificationCard';
 import { 
   useNotificationsInfiniteQuery, 
@@ -15,7 +14,7 @@ import {
   InAppNotification
 } from '../../hooks/useNotifications';
 
-export default function NotificationsScreen() {
+export default function AdminNotificationsScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'ALL' | 'UNREAD'>('ALL');
 
@@ -42,15 +41,17 @@ export default function NotificationsScreen() {
     }
 
     switch (notification.action) {
-      case 'OPEN_REWARD':
-      case 'OPEN_WITHDRAWAL':
-        router.push('/(worker)/wallet');
-        break;
       case 'OPEN_QR_BATCH':
-        // For admin, but just in case
+        router.push(`/(admin)/qr-batch-details?id=${notification.actionPayload?.batchId}`);
+        break;
+      case 'OPEN_WORKER':
+        router.push(`/(admin)/worker-details?id=${notification.actionPayload?.workerId}`);
+        break;
+      case 'OPEN_WITHDRAWAL':
+        router.push('/(admin)/payments');
         break;
       case 'OPEN_SETTINGS':
-        router.push('/(worker)/profile');
+        router.push('/(admin)/profile');
         break;
     }
   };
@@ -134,8 +135,6 @@ export default function NotificationsScreen() {
         windowSize={5}
         maxToRenderPerBatch={10}
       />
-
-      <WorkerBottomNavigation />
     </SafeAreaView>
   );
 }
@@ -192,7 +191,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   listContent: {
-    paddingBottom: 100,
+    paddingBottom: 40,
   },
   emptyContainer: {
     padding: 32,

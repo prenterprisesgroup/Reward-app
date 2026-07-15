@@ -4,10 +4,12 @@ import { Typography } from '../../components/common/Typography';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';
 import { useRouter } from 'expo-router';
-import { BottomNavigation } from '../../components/navigation/BottomNavigation';
+import { WorkerBottomNavigation } from '../../components/navigation/worker/WorkerBottomNavigation';
+import { WorkerHeader } from '../../components/layout/WorkerHeader';
 import { useUserQuery, useWalletQuery } from '../../hooks/useWalletQuery';
 import { ActivityIndicator, RefreshControl } from 'react-native';
 import { WalletData, RewardTransaction, PendingWithdrawal } from '../../types/backend.types';
+import React from 'react';
 
 export default function WorkerHomeScreen() {
   const router = useRouter();
@@ -16,13 +18,34 @@ export default function WorkerHomeScreen() {
 
   const { data: user, isLoading: isUserLoading, isError: isUserError, refetch: refetchUser } = useUserQuery();
   const { data: wallet, isLoading: isWalletLoading, isError: isWalletError, refetch: refetchWallet } = useWalletQuery();
+  
+  const { data: rewardsData, isLoading: isRewardsLoading, isError: isRewardsError, refetch: refetchRewards } = useWalletQuery({ section: 'transactions', page: 1, limit: 5 });
+  const { data: withdrawalsData, isLoading: isWithdrawalsLoading, isError: isWithdrawalsError, refetch: refetchWithdrawals } = useWalletQuery({ section: 'withdrawals', page: 1, limit: 5 });
 
-  const isLoading = isUserLoading || isWalletLoading;
-  const isError = isUserError || isWalletError;
+  const isLoading = isUserLoading || isWalletLoading || isRewardsLoading || isWithdrawalsLoading;
+  const isError = isUserError || isWalletError || isRewardsError || isWithdrawalsError;
+
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        refetchUser(),
+        refetchWallet(),
+        refetchRewards(),
+        refetchWithdrawals()
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchUser, refetchWallet, refetchRewards, refetchWithdrawals]);
 
   const handleRefetch = () => {
     refetchUser();
     refetchWallet();
+    refetchRewards();
+    refetchWithdrawals();
   };
 
   if (isLoading) {
@@ -47,8 +70,8 @@ export default function WorkerHomeScreen() {
   }
 
   const walletData = wallet as WalletData;
-  const recentRewards = Array.isArray(walletData?.transactions) ? walletData.transactions : [];
-  const pendingWithdrawals = Array.isArray(walletData?.pendingWithdrawals) ? walletData.pendingWithdrawals : [];
+  const recentRewards = Array.isArray(rewardsData?.data) ? rewardsData.data : [];
+  const pendingWithdrawals = Array.isArray(withdrawalsData?.data) ? withdrawalsData.data.filter((w: any) => w.status === 'PENDING') : [];
 
   const generateChartData = (rewards: any[]) => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -60,7 +83,7 @@ export default function WorkerHomeScreen() {
     
     rewards.forEach(reward => {
       const date = new Date(reward.createdAt);
-      if (date >= sevenDaysAgo && reward.status === 'COMPLETED' || reward.status === 'PENDING') {
+      if (date >= sevenDaysAgo && (reward.status === 'SUCCESS' || reward.status === 'PENDING')) {
         const dayName = days[date.getDay()];
         const entry = data.find(d => d.day === dayName);
         if (entry) {
@@ -87,31 +110,26 @@ export default function WorkerHomeScreen() {
       {/* Decorative blurred glow */}
       <View style={styles.headerGlow} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+          />
+        }
+      >
         
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerTextWrapper}>
-            <Typography style={styles.headerGreeting}>Good Morning{user?.name ? ',' : ''}</Typography>
-            <View style={styles.nameRow}>
-              <Typography style={styles.headerName}>{user?.name || ''}</Typography>
-              <Typography style={styles.waveEmoji}>👋</Typography>
-            </View>
-            <Typography style={styles.headerSubtitle}>Welcome back</Typography>
-          </View>
-
-          <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.notificationBtn} onPress={() => router.push('/(worker)/notifications')} accessible={true} accessibilityRole="button">
-              <Feather name="bell" size={24} color="#2F3A36" />
-              <View style={styles.notificationDot} />
-            </TouchableOpacity>
-            
-            <View style={styles.avatarWrapper}>
-              <Image source={require('../../../assets/images/avatar.png')} style={styles.avatar} />
-              <View style={styles.onlineStatusDot} />
-            </View>
-          </View>
-        </View>
+        {/* Premium Header */}
+        <WorkerHeader 
+          user={user} 
+          isLoading={isUserLoading} 
+          isError={isUserError} 
+          unreadCount={0} 
+        />
 
         {/* Balance Card */}
         <View style={styles.balanceCard}>
@@ -196,7 +214,7 @@ export default function WorkerHomeScreen() {
           <View style={styles.columnLeft}>
             <View style={styles.sectionHeader}>
               <Typography style={styles.sectionTitle} numberOfLines={1}>Recent Rewards</Typography>
-              <TouchableOpacity hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessible={true} accessibilityRole="button" accessibilityLabel="View all"><Typography style={styles.viewAll}>View all {'>'}</Typography></TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/(worker)/wallet')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessible={true} accessibilityRole="button" accessibilityLabel="View all"><Typography style={styles.viewAll}>View all {'>'}</Typography></TouchableOpacity>
             </View>
             <View style={styles.columnCard}>
               {recentRewards.length === 0 ? (
@@ -205,7 +223,7 @@ export default function WorkerHomeScreen() {
                 </View>
               ) : (
                 recentRewards.map((reward, index) => (
-                  <View key={reward.id || index} style={[styles.rewardItem, index === recentRewards.length - 1 ? { borderBottomWidth: 0 } : undefined]}>
+                  <View key={reward._id || reward.id || index} style={[styles.rewardItem, index === recentRewards.length - 1 ? { borderBottomWidth: 0 } : undefined]}>
                     <View style={[styles.companyLogo, { backgroundColor: theme.colors.borderLight, justifyContent: 'center', alignItems: 'center' }]}>
                       <Typography style={{ fontSize: 12, fontWeight: 'bold', color: theme.colors.textSecondary }}>
                         {(reward.companyName || reward.description || 'R').charAt(0).toUpperCase()}
@@ -239,7 +257,7 @@ export default function WorkerHomeScreen() {
           <View style={styles.columnRight}>
             <View style={styles.sectionHeader}>
               <Typography style={styles.sectionTitle} numberOfLines={1}>Pending Withdrawals</Typography>
-              <TouchableOpacity hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessible={true} accessibilityRole="button" accessibilityLabel="View all"><Typography style={styles.viewAll}>View all {'>'}</Typography></TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/(worker)/payments')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessible={true} accessibilityRole="button" accessibilityLabel="View all"><Typography style={styles.viewAll}>View all {'>'}</Typography></TouchableOpacity>
             </View>
             
             {pendingWithdrawals.length === 0 ? (
@@ -248,7 +266,7 @@ export default function WorkerHomeScreen() {
               </View>
             ) : (
               pendingWithdrawals.map((withdrawal, index) => (
-                <View key={withdrawal.id} style={[styles.columnCard, index > 0 ? { marginTop: 12 } : undefined]}>
+                <View key={withdrawal._id || withdrawal.id || `pending-${index}`} style={[styles.columnCard, index > 0 ? { marginTop: 12 } : undefined]}>
                   <View style={styles.pendingTop}>
                     <Feather name="briefcase" size={18} color={theme.colors.textSecondary} style={styles.pendingIcon} />
                     <View style={styles.pendingInfo}>
@@ -286,8 +304,8 @@ export default function WorkerHomeScreen() {
         <View style={styles.insightsCard}>
           <View style={styles.chartRow}>
             {chartData.map((data, index) => {
-              const barHeight = Math.max(32, (data.value / maxChartValue) * 140);
-              const isMax = data.value === maxChartValue;
+              const barHeight = maxChartValue > 0 ? Math.max(32, (data.value / maxChartValue) * 140) : 32;
+              const isMax = maxChartValue > 0 && data.value === maxChartValue;
               
               return (
                 <View key={index} style={styles.chartColumn}>
@@ -314,7 +332,7 @@ export default function WorkerHomeScreen() {
       </ScrollView>
 
       {/* Unified Bottom Navigation */}
-      <BottomNavigation />
+      <WorkerBottomNavigation />
     </SafeAreaView>
   );
 }

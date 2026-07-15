@@ -815,3 +815,16 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
 });
+
+export function ErrorBoundary({ error, retry }: any) {
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FAF7F2', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+      <Feather name="alert-triangle" size={48} color="#FF6B6B" style={{ marginBottom: 16 }} />
+      <Typography style={{ fontSize: 18, fontWeight: 'bold', color: '#2F3A36', marginBottom: 8 }}>Withdrawal Error</Typography>
+      <Typography style={{ color: '#7B8680', textAlign: 'center', marginBottom: 24 }}>{error.message}</Typography>
+      <TouchableOpacity style={{ backgroundColor: '#52796F', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }} onPress={retry}>
+        <Typography style={{ color: '#FFF', fontWeight: 'bold' }}>Try Again</Typography>
+      </TouchableOpacity>
+    </SafeAreaView>
+  );
+}

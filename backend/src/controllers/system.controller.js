@@ -8,6 +8,8 @@ const { logAudit } = require("../utils/audit");
 const presentUser = require("../utils/user-presenter");
 const { Barcode, BarcodeBatch, User, WalletTransaction, WithdrawalRequest, Company } = require("../models");
 const HttpError = require("../utils/http-error");
+const WalletService = require("../services/wallet.service");
+const NotificationService = require("../services/notification.service");
 const {
   BARCODE_BATCH_STATUS,
   BARCODE_STATUS,
@@ -118,6 +120,17 @@ async function createBarcodeBatch(req, res, next) {
       qrBatchId: batch.batchId,
       quantity,
       rewardAmount,
+    });
+
+    // Notify Admins
+    await NotificationService.createNotification({
+      recipient: req.user._id,
+      title: "QR Batch Generated",
+      message: `Batch #${batch.batchId} has been successfully generated.`,
+      category: "QR",
+      iconType: "QR",
+      action: "OPEN_QR_BATCH",
+      actionPayload: { batchId: batch._id },
     });
 
     res.status(201).json(presentBarcodeBatch(batch));
@@ -364,6 +377,17 @@ async function scanBarcode(req, res, next) {
     await logAudit(req, 'SCAN_SUCCESS', worker._id, company._id, beforeState, { walletBalance: worker.walletBalance }, session);
     await saveIdempotency(idempotencyKey, worker._id, '/scan', 200, response);
 
+    // Notify Worker
+    await NotificationService.createNotification({
+      recipient: worker._id,
+      title: "Reward Credited",
+      message: `₹${barcode.rewardAmount} has been credited to your wallet for scanning QR code.`,
+      category: "REWARD",
+      iconType: "GIFT",
+      action: "OPEN_REWARD",
+      actionPayload: { transactionId: transaction[0]._id },
+    }, session);
+
     await session.commitTransaction();
     session.endSession();
     res.json(response);
@@ -376,52 +400,59 @@ async function scanBarcode(req, res, next) {
 
 async function getWallet(req, res, next) {
   try {
-    const worker = await User.findById(req.user._id);
+    const { section, page, limit } = req.query;
 
-    if (!worker) {
-      throw new HttpError(404, "User not found");
+    if (section || page || limit) {
+      if (!section || !page || !limit) {
+        throw new HttpError(400, "section, page, and limit must all be provided together for pagination");
+      }
+      if (section !== 'transactions' && section !== 'withdrawals') {
+        throw new HttpError(400, "Unsupported section value. Allowed: transactions, withdrawals.");
+      }
+      
+      const pageNum = parseInt(page, 10);
+      const limitNum = parseInt(limit, 10);
+
+      if (isNaN(pageNum) || pageNum < 1) {
+        throw new HttpError(400, "page must be an integer >= 1");
+      }
+      if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
+        throw new HttpError(400, "limit must be an integer between 1 and 100");
+      }
+
+      // Query Parameter Whitelisting
+      const allowedParams = ['section', 'page', 'limit'];
+      const providedParams = Object.keys(req.query);
+      for (const param of providedParams) {
+        if (!allowedParams.includes(param)) {
+          throw new HttpError(400, `Unsupported query parameter: ${param}`);
+        }
+      }
+
+      const { data, totalItems } = await WalletService.getPaginatedWalletSection(req.user._id, section, pageNum, limitNum);
+      const totalPages = Math.ceil(totalItems / limitNum);
+
+      return res.json({
+        success: true,
+        data,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          totalItems,
+          totalPages,
+          hasNextPage: pageNum < totalPages,
+          hasPreviousPage: pageNum > 1
+        },
+        meta: {
+          generatedAt: new Date().toISOString(),
+          section
+        }
+      });
     }
 
-    const transactions = await WalletTransaction.find({ worker: worker._id })
-      .sort({ createdAt: -1 })
-      .limit(50);
-
-    // Calculate company balances
-    const allRewardTx = await WalletTransaction.find({
-      worker: worker._id,
-      type: WALLET_TRANSACTION_TYPE.BARCODE_REWARD,
-    }).populate("company", "_id name");
-    
-    const compBalances = {};
-    allRewardTx.forEach((t) => {
-      if (!t.company) return;
-      const cId = t.company._id.toString();
-      if (!compBalances[cId]) {
-        compBalances[cId] = { _id: t.company._id, name: t.company.name, balance: 0 };
-      }
-      compBalances[cId].balance += t.amount;
-    });
-    
-    const withdrawals = await WithdrawalRequest.find({
-      worker: worker._id,
-      status: { $in: [WITHDRAWAL_STATUS.APPROVED, WITHDRAWAL_STATUS.PAID, WITHDRAWAL_STATUS.PENDING] }
-    });
-    withdrawals.forEach(w => {
-      const cId = w.company.toString();
-      if (compBalances[cId]) {
-        compBalances[cId].balance -= w.amount;
-      }
-    });
-
-    const companyBalances = Object.values(compBalances).sort((a, b) => b.balance - a.balance);
-
-    res.json({
-      walletBalance: worker.walletBalance,
-      pendingWithdrawal: worker.pendingWithdrawalBalance || 0,
-      upiId: worker.upiId,
-      transactions,
-      companyBalances,
-    });
+    // Backward compatibility when no params are provided
+    const walletData = await WalletService.getWalletSummary(req.user._id);
+    res.json(walletData);
   } catch (error) {
     next(error);
   }
@@ -801,6 +832,17 @@ async function approveWithdrawal(req, res, next) {
     await logAudit(req, 'WITHDRAW_APPROVED', worker._id, companyId, beforeState, { pendingWithdrawalBalance: worker.pendingWithdrawalBalance, walletBalance: worker.walletBalance }, session);
     await saveIdempotency(idempotencyKey, req.user._id, `/withdrawals/${withdrawalId}/approve`, 200, response);
 
+    // Notify Worker
+    await NotificationService.createNotification({
+      recipient: worker._id,
+      title: "Withdrawal Approved",
+      message: `Your withdrawal request of ₹${withdrawal.amount} has been approved.`,
+      category: "PAYMENT",
+      iconType: "WALLET_CHECK",
+      action: "OPEN_WITHDRAWAL",
+      actionPayload: { withdrawalId: withdrawal._id },
+    }, session);
+
     await session.commitTransaction();
     session.endSession();
     res.json(response);
@@ -900,6 +942,20 @@ async function rejectWithdrawal(req, res, next) {
       await logAudit(req, 'WITHDRAW_REJECTED', worker._id, companyId, beforeState, afterState, session);
     }
     await saveIdempotency(idempotencyKey, req.user._id, `/withdrawals/${withdrawalId}/reject`, 200, response);
+
+    // Notify Worker
+    if (worker) {
+      await NotificationService.createNotification({
+        recipient: worker._id,
+        title: "Withdrawal Rejected",
+        message: `Your withdrawal request of ₹${withdrawal.amount} has been rejected. Please check the reason.`,
+        category: "PAYMENT",
+        iconType: "WALLET_X",
+        priority: "HIGH",
+        action: "OPEN_WITHDRAWAL",
+        actionPayload: { withdrawalId: withdrawal._id },
+      }, session);
+    }
 
     await session.commitTransaction();
     session.endSession();

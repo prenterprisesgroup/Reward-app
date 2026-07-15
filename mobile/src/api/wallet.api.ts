@@ -6,8 +6,8 @@ export const walletApi = {
     const { data } = await apiClient.get(ENDPOINTS.AUTH.ME);
     return data;
   },
-  getWallet: async () => {
-    const { data } = await apiClient.get(ENDPOINTS.SYSTEM.WALLET);
+  getWallet: async (params?: { section?: string; page?: number; limit?: number }) => {
+    const { data } = await apiClient.get(ENDPOINTS.SYSTEM.WALLET, { params });
     return data;
   },
   getWalletBreakdown: async () => {

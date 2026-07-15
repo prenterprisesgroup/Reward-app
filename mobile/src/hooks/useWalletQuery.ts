@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { walletApi } from '../api/wallet.api';
 
 export const useUserQuery = () => {
@@ -8,10 +8,25 @@ export const useUserQuery = () => {
   });
 };
 
-export const useWalletQuery = () => {
+export const useWalletQuery = (params?: { section?: string; page?: number; limit?: number }) => {
   return useQuery({
-    queryKey: ['wallet'],
-    queryFn: walletApi.getWallet,
+    queryKey: params ? ['wallet', params] : ['wallet'],
+    queryFn: () => walletApi.getWallet(params),
+  });
+};
+
+export const useWalletInfiniteQuery = (section: 'transactions' | 'withdrawals', limit: number = 20) => {
+  return useInfiniteQuery({
+    queryKey: ['wallet', section, { limit }],
+    queryFn: async ({ pageParam = 1 }) => {
+      return walletApi.getWallet({ section, page: pageParam as number, limit });
+    },
+    getNextPageParam: (lastPage) => {
+      if (lastPage?.pagination?.hasNextPage) {
+        return lastPage.pagination.page + 1;
+      }
+      return undefined;
+    },
   });
 };
 

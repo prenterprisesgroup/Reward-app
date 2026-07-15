@@ -4,6 +4,7 @@ const admin = require("firebase-admin");
 
 const NotificationLog = require("../models/notification-log.model");
 const NotificationTemplate = require("../models/notification-template.model");
+const InAppNotification = require("../models/in-app-notification.model");
 
 class NotificationService {
   constructor() {
@@ -143,6 +144,106 @@ class NotificationService {
       await log.save();
       throw error;
     }
+  }
+
+  /**
+   * Create an in-app notification.
+   * This is the only allowed way to write to the InAppNotification collection.
+   */
+  async createNotification(data, session = null) {
+    const {
+      recipient,
+      title,
+      message,
+      category,
+      iconType,
+      priority = "NORMAL",
+      action = "NONE",
+      actionPayload = {},
+      expiresAt = null
+    } = data;
+
+    const notificationPayload = {
+      recipient,
+      title,
+      message,
+      category,
+      iconType,
+      priority,
+      action,
+      actionPayload,
+    };
+
+    if (expiresAt) {
+      notificationPayload.expiresAt = expiresAt;
+    }
+
+    const created = await InAppNotification.create([notificationPayload], { session });
+    return created[0];
+  }
+
+  async getNotifications(userId, page = 1, limit = 20, category = null, isRead = null) {
+    const skip = (page - 1) * limit;
+    const filter = { recipient: userId, isDeleted: false };
+    
+    if (category && category !== 'ALL') {
+      filter.category = category;
+    }
+    
+    if (isRead !== null) {
+      filter.isRead = isRead;
+    }
+
+    const [data, totalItems, unreadCount] = await Promise.all([
+      InAppNotification.find(filter)
+        .sort({ createdAt: -1, _id: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      InAppNotification.countDocuments(filter),
+      InAppNotification.countDocuments({ recipient: userId, isDeleted: false, isRead: false })
+    ]);
+
+    return { data, totalItems, unreadCount };
+  }
+
+  async markAsRead(userId, notificationId) {
+    const notification = await InAppNotification.findOne({
+      _id: notificationId,
+      recipient: userId,
+      isDeleted: false
+    });
+
+    if (!notification) {
+      return null; // Not found
+    }
+
+    // Idempotency: if already read, just return it
+    if (notification.isRead) {
+      return notification;
+    }
+
+    notification.isRead = true;
+    notification.readAt = new Date();
+    await notification.save();
+    return notification;
+  }
+
+  async markAllAsRead(userId) {
+    const result = await InAppNotification.updateMany(
+      { recipient: userId, isDeleted: false, isRead: false },
+      { $set: { isRead: true, readAt: new Date() } }
+    );
+    return result;
+  }
+
+  async softDelete(userId, notificationId) {
+    const notification = await InAppNotification.findOneAndUpdate(
+      { _id: notificationId, recipient: userId, isDeleted: false },
+      { $set: { isDeleted: true, deletedAt: new Date() } },
+      { new: true }
+    );
+    return notification;
   }
 }
 

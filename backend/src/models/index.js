@@ -10,4 +10,5 @@ module.exports = {
   AuditLog: require("./audit-log.model"),
   IdempotencyKey: require("./idempotency-key.model"),
   Counter: require("./counter.model"),
+  InAppNotification: require("./in-app-notification.model"),
 };

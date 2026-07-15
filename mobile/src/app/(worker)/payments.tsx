@@ -223,6 +223,12 @@ export default function WorkerPaymentsScreen() {
           />
         }
         showsVerticalScrollIndicator={false}
+        
+        // Enterprise FlatList Performance Props
+        removeClippedSubviews={true}
+        windowSize={5}
+        maxToRenderPerBatch={10}
+        initialNumToRender={10}
       />
 
       {isLoading && (

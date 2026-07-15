@@ -37,7 +37,7 @@ export default function RecentActivityScreen() {
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const flattenedData = data?.pages.flatMap(page => page.items) || [];
+  const flattenedData = data?.pages.flatMap((page: any) => page.items) || [];
 
   const renderHeader = useCallback(() => (
     <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
@@ -57,7 +57,7 @@ export default function RecentActivityScreen() {
 
   const renderEmpty = useCallback(() => (
     <View style={styles.centerContainer}>
-      <MaterialCommunityIcons name="history" size={48} color={theme.colors.borderDark} />
+      <MaterialCommunityIcons name="history" size={48} color={theme.colors.border} />
       <Typography weight="bold" style={styles.emptyTitle}>No Recent Activity</Typography>
       <Typography style={styles.emptySubtitle}>Activities will appear here once workers start scanning QR codes.</Typography>
     </View>
@@ -112,7 +112,7 @@ export default function RecentActivityScreen() {
   }, [isFetchingNextPage]);
 
   return (
-    <ScreenWrapper preset="fixed" backgroundColor={theme.colors.background}>
+    <ScreenWrapper backgroundColor={theme.colors.background}>
       <View style={styles.container}>
         {renderHeader()}
         

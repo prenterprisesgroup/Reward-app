@@ -70,10 +70,10 @@ export default function BatchScanDetailsScreen() {
 
   const handleShare = useCallback(() => {
     setShareState('generating');
-    showToast('info', 'Generating report...');
+    showToast('Generating report...', 'info');
     setTimeout(() => {
       setShareState('native_share');
-      showToast('success', 'Opening native share sheet...');
+      showToast('Opening native share sheet...', 'success');
       setTimeout(() => {
         setShareState('completed');
         setTimeout(() => setShareState('idle'), 1000);
@@ -88,7 +88,7 @@ export default function BatchScanDetailsScreen() {
   }, [router]);
 
   const handleMapAction = useCallback(() => {
-    showToast('info', 'Choose Map Provider: Google Maps / Apple Maps / Copy Coordinates');
+    showToast('Choose Map Provider: Google Maps / Apple Maps / Copy Coordinates', 'info');
     // Future: ActionSheet for Map Providers
   }, [showToast]);
 
@@ -241,7 +241,7 @@ export default function BatchScanDetailsScreen() {
             <Animated.View entering={FadeInUp.delay(300).springify()}>
               <Typography variant="title" weight="bold" style={styles.sectionTitle}>Scan Lifecycle</Typography>
               <View style={[styles.card, { paddingHorizontal: theme.spacing.lg, paddingVertical: theme.spacing.xl }]}>
-                {scanDetails.timeline.map((event, index) => {
+                {scanDetails.timeline.map((event: any, index: number) => {
                   const isLast = index === scanDetails.timeline.length - 1;
                   const statusBadge = getTimelineStatusIcon(event.status);
                   
@@ -268,7 +268,7 @@ export default function BatchScanDetailsScreen() {
             <Animated.View entering={FadeInUp.delay(350).springify()}>
               <Typography variant="title" weight="bold" style={styles.sectionTitle}>Activity Log</Typography>
               <View style={[styles.card, { paddingVertical: theme.spacing.md }]}>
-                {scanDetails.activityLog.map((log, index) => (
+                {scanDetails.activityLog.map((log: any, index: number) => (
                   <View key={log.id} style={styles.activityLogRow}>
                     <Typography variant="caption" weight="medium" style={styles.activityLogTime}>{log.time}</Typography>
                     <Typography variant="body" style={styles.activityLogAction}>{log.action}</Typography>

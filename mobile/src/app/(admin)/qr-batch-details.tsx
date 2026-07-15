@@ -163,7 +163,7 @@ export default function QRBatchDetailsScreen() {
   }, []);
 
   const closeModal = useCallback(() => {
-    setModalConfig({ visible: false, type: 'none' });
+    setModalConfig({ visible: false, type: null });
   }, []);
 
   const confirmAction = useCallback(() => {
@@ -177,7 +177,7 @@ export default function QRBatchDetailsScreen() {
     if (type === 'duplicate') {
       duplicateMutation.mutate(batch?.id || '', {
         onSuccess: () => {
-          showToast('success', 'Batch duplicated successfully.');
+          showToast('Batch duplicated successfully.', 'success');
           router.push('/(admin)/qr-batches');
         },
         onSettled: () => setLoadingAction('idle')
@@ -185,7 +185,7 @@ export default function QRBatchDetailsScreen() {
     } else if (type === 'delete') {
       deleteMutation.mutate(batch?.id || '', {
         onSuccess: () => {
-          showToast('success', 'Batch deleted successfully.');
+          showToast('Batch deleted successfully.', 'success');
           router.back();
         },
         onSettled: () => setLoadingAction('idle')
@@ -193,7 +193,7 @@ export default function QRBatchDetailsScreen() {
     } else if (type === 'archive') {
       // Future archive mutation
       setLoadingAction('idle');
-      showToast('success', 'Batch archived successfully.');
+      showToast('Batch archived successfully.', 'success');
       router.back();
     }
   }, [modalConfig.type, closeModal, showToast, router]);
@@ -212,7 +212,7 @@ export default function QRBatchDetailsScreen() {
     setLoadingAction('sharing');
     setTimeout(() => {
       setLoadingAction('idle');
-      showToast('success', 'Share sheet opened.');
+      showToast('Share sheet opened.', 'success');
     }, 1500);
   }, [showToast]);
 
@@ -230,7 +230,7 @@ export default function QRBatchDetailsScreen() {
       payload: { status: nextStatus },
     }, {
       onSuccess: () => {
-        showToast('success', `Batch ${nextStatus === 'ACTIVE' ? 'activated' : 'deactivated'} successfully.`);
+        showToast(`Batch ${nextStatus === 'ACTIVE' ? 'activated' : 'deactivated'} successfully.`, 'success');
       },
       onSettled: () => {
         setLoadingAction('idle');

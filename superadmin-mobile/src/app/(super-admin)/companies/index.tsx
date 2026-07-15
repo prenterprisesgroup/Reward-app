@@ -127,17 +127,15 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 24,
-    alignSelf: 'center', // Center it horizontally
+    bottom: 42,
+    right: 16,
     backgroundColor: theme.colors.primaryDark,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32, // Wider padding
-    paddingVertical: 16, // Taller
-    borderRadius: 30, // Pill shape
-    width: '85%', // Take up most of the width like the design
-    maxWidth: 400,
+    paddingHorizontal: 8,
+    paddingVertical: 16,
+    borderRadius: 30,
     ...theme.shadows.md,
   },
   fabText: {

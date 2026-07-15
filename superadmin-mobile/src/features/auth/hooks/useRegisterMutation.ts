@@ -25,8 +25,7 @@ export const useRegisterMutation = () => {
         } else if (error.response.status === 409) {
           Alert.alert('Registration Failed', error.response.data?.message || 'User already exists.');
         } else {
-          Alert.alert('Error', 'Something went wrong.
-Please try again.');
+          Alert.alert('Error', 'Something went wrong. Please try again.');
         }
       } else {
         Alert.alert('Error', 'An unexpected error occurred.');

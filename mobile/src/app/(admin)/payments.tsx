@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, TextInput, Modal, Pressable, Linking } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, TextInput, Modal, Pressable, Linking, Image } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, { FadeIn, SlideInDown, SlideOutDown, useAnimatedStyle, withTiming, FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -68,7 +68,7 @@ export default function PaymentsScreen() {
   const approveMutation = useApproveWithdrawalMutation();
   const rejectMutation = useRejectWithdrawalMutation();
 
-  const flattenedData = useMemo(() => data?.pages.flatMap(page => page.withdrawals) || [], [data]);
+  const flattenedData = useMemo(() => data?.pages.flatMap((page: any) => page.withdrawals) || [], [data]);
 
   const handleRefresh = useCallback(() => refetch(), [refetch]);
 
@@ -182,12 +182,12 @@ export default function PaymentsScreen() {
           return (
             <TouchableOpacity 
               key={tab} 
-              style={[styles.tab, isActive && styles.activeTab]} 
+              style={[styles.tab, isActive ? styles.activeTab : undefined]} 
               onPress={() => setActiveTab(tab)}
               accessibilityRole="tab"
               accessibilityState={{ selected: isActive }}
             >
-              <Typography style={[styles.tabText, isActive && styles.activeTabText]} weight={isActive ? 'bold' : 'medium'}>
+              <Typography style={[styles.tabText, isActive ? styles.activeTabText : undefined]} weight={isActive ? 'bold' : 'medium'}>
                 {label}
               </Typography>
             </TouchableOpacity>
@@ -228,13 +228,13 @@ export default function PaymentsScreen() {
           const isActive = activeFilter === item;
           return (
             <TouchableOpacity 
-              style={[styles.chip, isActive && styles.activeChip]}
+              style={[styles.chip, isActive ? styles.activeChip : undefined]}
               onPress={() => setActiveFilter(item)}
               accessibilityRole="button"
               accessibilityState={{ selected: isActive }}
             >
               {item === 'Today' && <Feather name="calendar" size={14} color={isActive ? '#fff' : theme.colors.textSecondary} style={{ marginRight: 6 }} />}
-              <Typography style={[styles.chipText, isActive && styles.activeChipText]}>{item}</Typography>
+              <Typography style={[styles.chipText, isActive ? styles.activeChipText : undefined]}>{item}</Typography>
               {['Highest Amount', 'Newest First'].includes(item) && (
                 <Feather name="chevron-down" size={14} color={isActive ? '#fff' : theme.colors.textSecondary} style={{ marginLeft: 4 }} />
               )}
@@ -254,7 +254,7 @@ export default function PaymentsScreen() {
 
     return (
       <View style={styles.emptyContainer}>
-        <MaterialCommunityIcons name="wallet-outline" size={48} color={theme.colors.borderDark} />
+        <MaterialCommunityIcons name="wallet-outline" size={48} color={theme.colors.border} />
         <Typography weight="bold" style={styles.emptyTitle}>{msg}</Typography>
         <Typography style={styles.emptySubtitle}>New withdrawal requests will appear here.</Typography>
       </View>
@@ -390,7 +390,7 @@ export default function PaymentsScreen() {
   };
 
   return (
-    <ScreenWrapper preset="fixed" backgroundColor={theme.colors.background}>
+    <ScreenWrapper backgroundColor={theme.colors.background}>
       <View style={styles.container}>
         {renderHeader()}
         <View style={{ paddingHorizontal: theme.spacing.xl, paddingBottom: 12 }}>
@@ -492,9 +492,9 @@ const styles = StyleSheet.create({
 
   // Bottom Sheet
   sheetOverlay: { flex: 1, justifyContent: 'flex-end' },
-  sheetBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)' },
+  sheetBackdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.4)' },
   sheetContainer: { backgroundColor: theme.colors.background, borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: theme.spacing.xl, paddingTop: 12, ...theme.shadows.lg },
-  sheetHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: theme.colors.borderDark, alignSelf: 'center', marginBottom: 20 },
+  sheetHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: theme.colors.border, alignSelf: 'center', marginBottom: 20 },
   sheetCloseBtn: { position: 'absolute', top: 20, right: 20, width: 32, height: 32, borderRadius: 16, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', zIndex: 10 },
   sheetHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
   sheetAvatar: { width: 56, height: 56, borderRadius: 28, marginRight: 16 },
@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
 
   // Confirm Modal
   modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: theme.spacing.xl },
-  modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
+  modalBackdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.5)' },
   confirmDialog: { width: '100%', backgroundColor: theme.colors.surface, borderRadius: 24, padding: 24, alignItems: 'center', ...theme.shadows.lg },
   confirmIconBox: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
   confirmActions: { flexDirection: 'row', gap: 12, width: '100%' },

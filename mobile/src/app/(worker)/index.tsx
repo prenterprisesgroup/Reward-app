@@ -1,6 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, Image, ScrollView, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { Typography } from '../../components/common/Typography';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../constants/theme';

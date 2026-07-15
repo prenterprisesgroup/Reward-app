@@ -173,7 +173,7 @@ export default function WorkerPaymentsScreen() {
 
     return (
       <View style={styles.emptyContainer}>
-        <MaterialCommunityIcons name="wallet-outline" size={48} color={theme.colors.borderDark} />
+        <MaterialCommunityIcons name="wallet-outline" size={48} color={theme.colors.border} />
         <Typography weight="bold" style={styles.emptyTitle}>{msg}</Typography>
         <Typography style={styles.emptySubtitle}>New requests will appear here.</Typography>
       </View>

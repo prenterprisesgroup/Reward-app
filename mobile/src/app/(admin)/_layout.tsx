@@ -13,7 +13,7 @@ export default function AdminLayout() {
       <Tabs.Screen name="profile" />
       <Tabs.Screen 
         name="create-qr-batch" 
-        options={{ href: null, unmountOnBlur: false }}
+        options={{ href: null, unmountOnBlur: false } as any}
       />
     </Tabs>
   );

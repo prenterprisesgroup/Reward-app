@@ -37,6 +37,9 @@ export interface User {
   name: string;
   phone: string;
   role: UserRole;
+  email?: string;
+  profilePhotoUrl?: string;
+  upiId?: string;
 }
 
 interface AuthState {

@@ -4,7 +4,6 @@ import { Typography } from '../common/Typography';
 import { theme } from '../../constants/theme';
 import { QuickActionCard } from './QuickActionCard';
 import { useRouter } from 'expo-router';
-import { ToastAndroid, Platform, Alert } from 'react-native';
 
 export function QuickActionsSection() {
   const router = useRouter();
@@ -18,26 +17,17 @@ export function QuickActionsSection() {
     { 
       title: 'Company\nAdmins', 
       iconName: 'user' as const,
-      onPress: () => {
-        if (Platform.OS === 'android') ToastAndroid.show('Company Admins coming soon', ToastAndroid.SHORT);
-        else Alert.alert('Coming Soon', 'Company Admins coming soon');
-      }
+      onPress: () => router.push('/(super-admin)/companies')
     },
     { 
       title: 'Analytics', 
       iconName: 'bar-chart-2' as const,
-      onPress: () => {
-        if (Platform.OS === 'android') ToastAndroid.show('Analytics coming soon', ToastAndroid.SHORT);
-        else Alert.alert('Coming Soon', 'Analytics coming soon');
-      }
+      onPress: () => router.push('/(super-admin)/analytics')
     },
     { 
       title: 'Platform\nSettings', 
       iconName: 'settings' as const,
-      onPress: () => {
-        if (Platform.OS === 'android') ToastAndroid.show('Platform Settings coming soon', ToastAndroid.SHORT);
-        else Alert.alert('Coming Soon', 'Platform Settings coming soon');
-      }
+      onPress: () => router.push('/(super-admin)/settings')
     },
   ];
 

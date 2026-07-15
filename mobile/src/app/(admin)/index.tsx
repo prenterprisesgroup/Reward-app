@@ -201,10 +201,10 @@ export default function CompanyAdminDashboardScreen() {
       <Animated.View entering={FadeInUp.delay(600).springify()} style={styles.activityCard}>
         {isActivityLoading ? (
           <Typography style={{ color: theme.colors.textSecondary, textAlign: 'center', padding: 20 }}>Loading...</Typography>
-        ) : !activityData?.pages?.[0]?.items?.length ? (
+        ) : !(activityData?.pages?.[0] as any)?.items?.length ? (
           <Typography style={{ color: theme.colors.textSecondary, textAlign: 'center', padding: 20 }}>No recent activity</Typography>
         ) : (
-          activityData.pages[0].items.map((act, index) => {
+          (activityData.pages[0] as any).items.map((act: any, index: number) => {
             // Map backend shape to expected component props for now (ActivityTimelineItem expects certain colors based on type)
             let icon = 'qrcode-scan';
             let iconColor = theme.colors.success;
@@ -235,7 +235,7 @@ export default function CompanyAdminDashboardScreen() {
                 key={act.id} 
                 item={mappedItem} 
                 index={index} 
-                isLast={index === activityData.pages[0].items.length - 1} 
+                isLast={index === ((activityData.pages[0] as any).items.length || 0) - 1} 
               />
             );
           })
@@ -256,10 +256,10 @@ export default function CompanyAdminDashboardScreen() {
       <Animated.View entering={FadeInUp.delay(800).springify()} style={styles.activityCard}>
         {isPendingLoading ? (
           <Typography style={{ color: theme.colors.textSecondary, textAlign: 'center', padding: 20 }}>Loading...</Typography>
-        ) : !pendingData?.pages?.[0]?.withdrawals?.length ? (
+        ) : !(pendingData?.pages?.[0] as any)?.withdrawals?.length ? (
           <Typography style={{ color: theme.colors.textSecondary, textAlign: 'center', padding: 20 }}>No pending requests</Typography>
         ) : (
-          pendingData.pages[0].withdrawals.map((req, index) => {
+          (pendingData.pages[0] as any).withdrawals.map((req: any, index: number) => {
             const mappedItem = {
               id: req.id || req._id,
               name: req.worker?.name || 'Unknown',
@@ -274,7 +274,7 @@ export default function CompanyAdminDashboardScreen() {
                 key={mappedItem.id} 
                 item={mappedItem} 
                 index={index} 
-                isLast={index === pendingData.pages[0].withdrawals.length - 1} 
+                isLast={index === ((pendingData.pages[0] as any).withdrawals.length || 0) - 1} 
               />
             );
           })
@@ -285,7 +285,7 @@ export default function CompanyAdminDashboardScreen() {
 
   if (isStatsError) {
     return (
-      <ScreenWrapper preset="fixed" backgroundColor={theme.colors.background}>
+      <ScreenWrapper backgroundColor={theme.colors.background}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
           <Feather name="alert-triangle" size={48} color={theme.colors.error} style={{ marginBottom: 16 }} />
           <Typography variant="headingMd" weight="bold" style={{ marginBottom: 8 }}>Failed to load dashboard</Typography>
@@ -304,7 +304,7 @@ export default function CompanyAdminDashboardScreen() {
   }
 
   return (
-    <ScreenWrapper preset="fixed" backgroundColor={theme.colors.background}>
+    <ScreenWrapper backgroundColor={theme.colors.background}>
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: scrollPaddingBottom }}

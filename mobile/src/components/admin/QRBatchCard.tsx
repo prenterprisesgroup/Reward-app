@@ -23,7 +23,14 @@ export interface QRBatch {
   createdBy: {
       id: string;
       name: string;
-  }
+  };
+  recentScans?: any[];
+  company?: {
+    id: string;
+    name: string;
+    logo: string | null;
+  };
+  description?: string;
 }
 
 interface QRBatchCardProps {

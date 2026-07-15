@@ -27,6 +27,7 @@ export interface WalletData {
   todayEarnings: number;
   lastUpdated: string;
   recentRewards?: RewardTransaction[];
+  transactions?: RewardTransaction[];
   pendingWithdrawals?: PendingWithdrawal[];
 }
 

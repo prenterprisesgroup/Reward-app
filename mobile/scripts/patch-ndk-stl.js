@@ -48,7 +48,10 @@ function walk(dir, files = []) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       walk(fullPath, files);
-    } else if (entry.name === 'CMakeLists.txt') {
+    } else if (
+      entry.name === 'CMakeLists.txt' ||
+      entry.name.endsWith('.cmake')
+    ) {
       files.push(fullPath);
     }
   }

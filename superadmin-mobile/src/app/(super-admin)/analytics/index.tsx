@@ -19,8 +19,8 @@ export default function AnalyticsScreen() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.trends('daily') }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.trends('monthly') }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.trends('30d') }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.trends('1y') }),
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.growth('30d') }),
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.topCompanies('30d') }),
     ]);

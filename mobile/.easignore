@@ -1,0 +1,28 @@
+node_modules
+
+# Git
+.git
+.gitignore
+
+# Expo
+.expo
+.expo-shared
+
+# Android build cache
+android/.gradle
+android/build
+android/app/build
+android/app/.cxx
+
+# Metro cache
+.metro-cache
+
+# Logs
+*.log
+
+# Environment
+.env
+
+# OS
+.DS_Store
+Thumbs.db

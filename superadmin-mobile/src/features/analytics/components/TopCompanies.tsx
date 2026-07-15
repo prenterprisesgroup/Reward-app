@@ -20,7 +20,7 @@ const CompanyRow = memo(({ item, index }: { item: TopCompanyModel; index: number
 ));
 
 export const TopCompanies = memo(() => {
-  const { data, isLoading, isError } = useTopCompaniesQuery('rewards');
+  const { data, isLoading, isError } = useTopCompaniesQuery('30d');
 
   if (isLoading) {
     return (
@@ -30,18 +30,18 @@ export const TopCompanies = memo(() => {
     );
   }
 
-  if (isError || !data) {
+  if (isError) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>Failed to load top companies.</Text>
+        <Text style={styles.errorText}>Unable to load top companies data.</Text>
       </View>
     );
   }
 
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     return (
       <View style={styles.container}>
-        <Text style={styles.emptyText}>No companies with rewards found.</Text>
+        <Text style={styles.emptyText}>No companies with rewards distributed yet.</Text>
       </View>
     );
   }

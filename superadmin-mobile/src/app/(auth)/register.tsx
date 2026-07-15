@@ -63,8 +63,7 @@ export default function RegisterScreen() {
               Create Worker Account
             </Typography>
             <Typography variant="bodyLarge" color="textSecondary" style={styles.subtitle}>
-              Register now to start scanning QR codes{'
-'}and earning rewards.
+              Register now to start scanning QR codes and earning rewards.
             </Typography>
           </Animated.View>
 

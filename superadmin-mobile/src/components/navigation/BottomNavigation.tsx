@@ -8,21 +8,33 @@ import { useRouter, useSegments } from 'expo-router';
 
 interface BottomNavigationProps {
   isAdmin?: boolean;
+  isSuperAdmin?: boolean;
 }
 
-export function BottomNavigation({ isAdmin = false }: BottomNavigationProps) {
+export function BottomNavigation({ isAdmin = false, isSuperAdmin = false }: BottomNavigationProps) {
   const router = useRouter();
   const segments = useSegments();
   const insets = useSafeAreaInsets();
-  const bottomSpacing = Math.max(insets.bottom + 12, 24);
 
   // Safely find the current route from segments
-  // segments will look like ['(admin)', 'qr-batches'] or ['(worker)', 'scan'] or just ['qr-batches'] depending on expo router versions
+  // segments will look like ['(admin)', 'qr-batches'] or ['(worker)', 'scan'] or ['(super-admin)', 'dashboard']
   const currentSegment = segments.length > 0 ? segments[segments.length - 1] : '';
 
   // Determine active route
-  let activeRoute = isAdmin ? 'dashboard' : 'home';
-  if (isAdmin) {
+  let activeRoute = 'home';
+  if (isSuperAdmin) {
+    if (currentSegment === 'dashboard' || currentSegment === '(super-admin)') {
+      activeRoute = 'dashboard';
+    } else if (currentSegment === 'companies') {
+      activeRoute = 'companies';
+    } else if (currentSegment === 'analytics') {
+      activeRoute = 'analytics';
+    } else if (currentSegment === 'settings') {
+      activeRoute = 'settings';
+    } else {
+      activeRoute = 'dashboard';
+    }
+  } else if (isAdmin) {
     if (currentSegment === 'qr-batches') {
       activeRoute = 'qr-batches';
     } else if (currentSegment === 'payments') {
@@ -30,6 +42,8 @@ export function BottomNavigation({ isAdmin = false }: BottomNavigationProps) {
     } else if (currentSegment === 'profile') {
       activeRoute = 'profile';
     } else if (currentSegment === 'index' || currentSegment === '(admin)') {
+      activeRoute = 'dashboard';
+    } else {
       activeRoute = 'dashboard';
     }
   } else {
@@ -59,16 +73,17 @@ export function BottomNavigation({ isAdmin = false }: BottomNavigationProps) {
         onPress={onPress}
         accessible={true}
         accessibilityRole="tab"
+        accessibilityState={{ selected: isActive }}
       >
-        <View style={[styles.iconContainer, isActive && styles.iconContainerActive]}>
+        <View style={styles.iconContainer}>
           <IconFamily
             name={iconName}
-            size={24}
-            color={isActive ? '#FFFFFF' : '#6B7280'}
+            size={28}
+            color={isActive ? '#2DBE3D' : '#1F2937'}
           />
           {hasBadge && <View style={styles.badge} />}
         </View>
-        <Typography style={[styles.navLabel, isActive && styles.navLabelActive]}>
+        <Typography style={[styles.navLabel, isActive ? styles.navLabelActive : {}]}>
           {label}
         </Typography>
       </TouchableOpacity>
@@ -76,9 +91,24 @@ export function BottomNavigation({ isAdmin = false }: BottomNavigationProps) {
   };
 
   return (
-    <View style={[styles.bottomNavWrapper, { bottom: bottomSpacing }]}>
+    <View style={[styles.bottomNavWrapper, { paddingBottom: insets.bottom }]}>
       <View style={styles.bottomNavContainer}>
-        {isAdmin ? (
+        {isSuperAdmin ? (
+          <>
+            {renderNavItem('dashboard', 'Dashboard', MaterialCommunityIcons, 'view-dashboard', () => {
+              if (activeRoute !== 'dashboard') router.push('/(super-admin)/dashboard');
+            })}
+            {renderNavItem('companies', 'Companies', MaterialCommunityIcons, 'office-building', () => {
+              if (activeRoute !== 'companies') router.push('/(super-admin)/companies');
+            })}
+            {renderNavItem('analytics', 'Analytics', MaterialCommunityIcons, 'chart-line', () => {
+              if (activeRoute !== 'analytics') router.push('/(super-admin)/analytics');
+            })}
+            {renderNavItem('settings', 'Settings', Feather, 'settings', () => {
+              if (activeRoute !== 'settings') router.push('/(super-admin)/settings');
+            }, true /* hasBadge */)}
+          </>
+        ) : isAdmin ? (
           <>
             {renderNavItem('dashboard', 'Dashboard', MaterialCommunityIcons, 'view-dashboard', () => {
               if (activeRoute !== 'dashboard') router.push('/(admin)');
@@ -119,61 +149,57 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    alignItems: 'center',
+    bottom: 0,
     zIndex: 9999,
-    elevation: 20,
   },
   bottomNavContainer: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    borderRadius: 999,
-    height: 76,
-    width: '92%',
-    paddingHorizontal: 8,
+    height: 84,
+    width: '100%',
+    paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#E5E7EB',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.8,
-    shadowRadius: 24,
-    elevation: 10,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
   },
   navItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 48,
   },
   iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
   },
-  iconContainerActive: {
-    backgroundColor: '#4CAF50', // Primary Green
-  },
   navLabel: {
-    fontSize: 12,
-    color: '#6B7280',
+    fontSize: 14,
+    color: '#1F2937',
     fontWeight: '500',
-    // fontFamily: 'Inter' // If available in your Typography component
+    letterSpacing: -0.2,
   },
   navLabelActive: {
-    color: '#4CAF50', // Primary Green
+    color: '#2DBE3D',
     fontWeight: '600',
   },
   badge: {
     position: 'absolute',
-    top: 6,
-    right: 8,
+    top: 8,
+    right: 10,
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#2DBE3D',
     borderWidth: 1.5,
     borderColor: '#FFFFFF',
   },

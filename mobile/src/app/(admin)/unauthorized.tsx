@@ -10,7 +10,7 @@ export default function UnauthorizedScreen() {
   const router = useRouter();
   
   return (
-    <ScreenWrapper preset="fixed" backgroundColor={theme.colors.background}>
+    <ScreenWrapper backgroundColor={theme.colors.background}>
       <View style={styles.container}>
         <Feather name="shield-off" size={64} color={theme.colors.error} style={styles.icon} />
         <Typography variant="headingXl" weight="bold" style={styles.title}>Access Denied</Typography>

@@ -9,7 +9,8 @@ import {
   ActivityIndicator,
   RefreshControl,
   Modal,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  Platform
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -144,20 +145,18 @@ export default function BatchScansHistoryScreen() {
     setLoadingExportType(type);
     setExportStateMsg('Queued...');
     showToast('info', 'Export queued. This may take a moment.');
+    showToast('Export queued. This may take a moment.', 'info');
     
-    setTimeout(() => {
-      setExportStateMsg('Preparing...');
-      setTimeout(() => {
-        setExportStateMsg('Ready');
-        setTimeout(() => {
-          setLoadingExportType(null);
-          setExportStateMsg('');
-          setExportModalVisible(false);
-          showToast('success', `Exported ${type.toUpperCase()} successfully.`);
-        }, 1000);
-      }, 1500);
-    }, 1000);
-  }, [showToast]);
+    exportMutation.mutate({ id: batchId, type }, {
+      onSuccess: () => {
+        showToast(`Exported ${type.toUpperCase()} successfully.`, 'success');
+        setExportModalVisible(false);
+      },
+      onError: () => {
+        showToast('Export failed. Please try again.', 'error');
+      }
+    });
+  }, [showToast, exportMutation, batchId]);
 
   const handleFilterPress = (opt: string) => {
     setFilters(prev => {
@@ -228,7 +227,7 @@ export default function BatchScansHistoryScreen() {
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Typography variant="headingLg" weight="bold" style={styles.headerTitle}>Batch Scans History</Typography>
-          <Typography style={styles.headerSubtitle}>Batch ID: PR-240518-01</Typography>
+          <Typography style={styles.headerSubtitle}>Batch ID: {batchId}</Typography>
         </View>
         <TouchableOpacity style={styles.iconBtn} onPress={() => setExportModalVisible(true)} accessibilityRole="button" accessibilityLabel="Export Scan History">
           <Feather name="download" size={20} color={theme.colors.textPrimary} />
@@ -269,7 +268,7 @@ export default function BatchScansHistoryScreen() {
                 style={[styles.filterChip, isSelected && styles.filterChipActive]}
                 onPress={() => handleFilterPress(item)}
               >
-                <Typography variant="caption" weight="bold" style={[styles.filterChipText, isSelected && styles.filterChipTextActive]}>
+                <Typography variant="caption" weight="bold" style={[styles.filterChipText, isSelected ? styles.filterChipTextActive : undefined]}>
                   {item}
                 </Typography>
               </TouchableOpacity>
@@ -308,7 +307,7 @@ export default function BatchScansHistoryScreen() {
             </Typography>
           </View>
         )}
-        ListFooterComponent={() => isLoadingMore ? (
+        ListFooterComponent={() => isFetchingNextPage ? (
           <View style={{ paddingVertical: 8 }}>
             <View style={styles.card}><SkeletonRow /></View>
             <View style={styles.card}><SkeletonRow /></View>

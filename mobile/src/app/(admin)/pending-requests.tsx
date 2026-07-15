@@ -41,7 +41,7 @@ export default function PendingRequestsScreen() {
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const flattenedData = data?.pages.flatMap(page => page.withdrawals) || [];
+  const flattenedData = data?.pages.flatMap((page: any) => page.withdrawals) || [];
 
   const renderHeader = useCallback(() => (
     <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
@@ -61,7 +61,7 @@ export default function PendingRequestsScreen() {
 
   const renderEmpty = useCallback(() => (
     <View style={styles.centerContainer}>
-      <MaterialCommunityIcons name="wallet-outline" size={48} color={theme.colors.borderDark} />
+      <MaterialCommunityIcons name="wallet-outline" size={48} color={theme.colors.border} />
       <Typography weight="bold" style={styles.emptyTitle}>No Pending Requests</Typography>
       <Typography style={styles.emptySubtitle}>You have approved all the worker withdrawal requests.</Typography>
     </View>
@@ -100,7 +100,7 @@ export default function PendingRequestsScreen() {
   }, [isFetchingNextPage]);
 
   return (
-    <ScreenWrapper preset="fixed" backgroundColor={theme.colors.background}>
+    <ScreenWrapper backgroundColor={theme.colors.background}>
       <View style={styles.container}>
         {renderHeader()}
         

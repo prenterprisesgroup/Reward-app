@@ -56,34 +56,25 @@ class AnalyticsService {
       totalCompanies: growth.companies.current,
       totalWorkers: growth.workers.current,
       rewardsDistributed: growth.rewards.current,
-      qrCodesRedeemed: growth.qrCodesRedeemed.current,
-      pendingWithdrawals: growth.pendingWithdrawals.current
+      qrCodesGenerated: growth.batches.current
     };
   }
 
   static async getGrowth(period) {
     const dates = AnalyticsPeriodUtil.getPeriodDates(period);
 
-    const [companies, workers, rewards, batches, qrCodesRedeemed, pendingWithdrawals] = await Promise.all([
+    const [companies, workers, rewards, batches] = await Promise.all([
       this._calculateGrowth(Company, "createdAt", dates, { status: "ACTIVE" }),
       this._calculateGrowth(User, "createdAt", dates, { role: "WORKER", isDeleted: { $ne: true } }),
       this._calculateGrowth(WalletTransaction, "createdAt", dates, { type: "REWARD", status: "COMPLETED" }, "$amount"),
       this._calculateGrowth(BarcodeBatch, "createdAt", dates, {}),
-      this._calculateGrowth(Barcode, "redeemedAt", dates, { status: "REDEEMED" }),
-      this._calculateGrowth(WithdrawalRequest, "createdAt", dates, { status: "PENDING" }),
     ]);
 
     return {
       companies,
       workers,
       rewards,
-      batches, // Kept for backward compatibility
-      qrCodesRedeemed,
-      pendingWithdrawals,
-      platformGrowth: {
-        available: false,
-        reason: "Business definition not configured"
-      }
+      batches
     };
   }
 

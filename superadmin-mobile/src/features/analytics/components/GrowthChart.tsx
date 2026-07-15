@@ -5,7 +5,7 @@ import { theme } from '../../../constants/theme';
 import { LineChart } from 'react-native-gifted-charts/dist/LineChart';
 
 export const GrowthChart = memo(() => {
-  const { data, isLoading, isError } = useAnalyticsTrendsQuery('monthly');
+  const { data, isLoading, isError } = useAnalyticsTrendsQuery('1y');
 
   if (isLoading) {
     return (

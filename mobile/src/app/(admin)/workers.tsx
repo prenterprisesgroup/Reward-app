@@ -179,7 +179,7 @@ export default function WorkersScreen() {
                     style={{ marginRight: 6 }} 
                   />
                 )}
-                <Typography variant="caption" style={[styles.chipText, isActive && styles.chipTextActive]}>
+                <Typography variant="caption" style={[styles.chipText, isActive ? styles.chipTextActive : undefined]}>
                   {f.label}
                 </Typography>
               </TouchableOpacity>

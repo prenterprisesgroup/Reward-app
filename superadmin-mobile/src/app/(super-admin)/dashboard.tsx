@@ -19,7 +19,7 @@ const dashboardFeatures: Record<string, FeatureState> = {
   quickActions: 'enabled',
   activity: 'enabled',
   withdrawals: 'enabled',
-  systemHealth: 'coming_soon',
+  systemHealth: 'enabled',
 };
 
 export default function SuperAdminDashboard() {

@@ -5,7 +5,7 @@ import { useAnalyticsTrendsQuery } from '../hooks/useAnalytics';
 import { theme } from '../../../constants/theme';
 
 export const TrendChart = memo(() => {
-  const { data, isLoading, isError } = useAnalyticsTrendsQuery('daily');
+  const { data, isLoading, isError } = useAnalyticsTrendsQuery('30d');
 
   if (isLoading) {
     return (

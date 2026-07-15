@@ -136,7 +136,7 @@ export default function QRBatchesScreen() {
     const nextStatus = batch.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     updateMutation.mutate({ id: batch.id, payload: { status: nextStatus } }, {
       onSuccess: () => {
-        showToast('success', `Batch ${nextStatus === 'ACTIVE' ? 'activated' : 'deactivated'} successfully.`);
+        showToast(`Batch ${nextStatus === 'ACTIVE' ? 'activated' : 'deactivated'} successfully.`, 'success');
       },
     });
   }, [showToast, updateMutation]);
@@ -229,7 +229,7 @@ export default function QRBatchesScreen() {
                       style={{ marginRight: 6 }} 
                     />
                   )}
-                  <Typography style={[styles.chipText, isActive && styles.activeChipText]} weight={isActive ? 'medium' : 'regular'}>
+                  <Typography style={[styles.chipText, isActive ? styles.activeChipText : undefined]} weight={isActive ? 'medium' : 'regular'}>
                     {item}
                   </Typography>
                 </TouchableOpacity>
@@ -334,7 +334,7 @@ export default function QRBatchesScreen() {
   ), [handleViewDetails, handleDownload, handleDuplicate, handleDelete, handleToggleBatchStatus, duplicateMutation.isPending, deleteMutation.isPending, downloadMutation.isPending, updateMutation.isPending, downloadMutation.variables, updateMutation.variables, selectedBatchForDuplicate, selectedBatchForDelete]);
 
   return (
-    <ScreenWrapper preset="fixed" backgroundColor={theme.colors.background}>
+    <ScreenWrapper backgroundColor={theme.colors.background}>
       <View style={styles.container}>
         {renderHeader()}
         

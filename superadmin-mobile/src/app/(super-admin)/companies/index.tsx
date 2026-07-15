@@ -109,7 +109,7 @@ export default function CompaniesScreen() {
         }
       />
 
-      <TouchableOpacity style={styles.fab} activeOpacity={0.9} onPress={() => router.push('/companies/create/step-1')}>
+      <TouchableOpacity style={styles.fab} activeOpacity={0.9} onPress={() => router.push('/(super-admin)/companies/create/step-1')}>
         <Feather name="plus" size={20} color={theme.colors.surface} />
         <Typography style={styles.fabText}>Add Company</Typography>
       </TouchableOpacity>

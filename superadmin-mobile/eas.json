@@ -1,31 +1,21 @@
 {
   "cli": {
-    "version": ">= 20.5.1",
-    "appVersionSource": "remote"
+    "version": ">= 5.2.0"
   },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal"
     },
-
     "preview": {
-      "developmentClient": false,
       "distribution": "internal",
       "android": {
-        "buildType": "apk",
-        "env": {
-          "ANDROID_NDK_VERSION": "26.1.10909105"
-        }
+        "buildType": "apk"
       }
     },
-
     "production": {
-      "autoIncrement": true,
       "android": {
-        "env": {
-          "ANDROID_NDK_VERSION": "26.1.10909105"
-        }
+        "buildType": "apk"
       }
     }
   },

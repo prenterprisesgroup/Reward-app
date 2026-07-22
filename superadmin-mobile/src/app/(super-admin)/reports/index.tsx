@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xs,
   },
   generateBtnText: {
-    ...theme.typography.button,
+    ...theme.typography.body,
     color: '#fff',
   },
   listContent: {
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     marginTop: 60,
   },
   emptyText: {
-    ...theme.typography.h4,
+    ...theme.typography.h3,
     color: theme.colors.textSecondary,
     marginBottom: theme.spacing.xs,
   },
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   errorText: {
-    ...theme.typography.h4,
+    ...theme.typography.h3,
     color: theme.colors.error,
     marginBottom: theme.spacing.md,
   },
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.sm,
   },
   retryText: {
-    ...theme.typography.button,
+    ...theme.typography.body,
     color: theme.colors.text,
   }
 });

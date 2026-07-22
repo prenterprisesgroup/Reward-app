@@ -35,6 +35,10 @@ export const colors = {
 };
 
 export const typography = {
+  h2: { fontSize: 24, lineHeight: 28 },
+  h3: { fontSize: 20, lineHeight: 24 },
+  body: { fontSize: 14, lineHeight: 20 },
+  caption: { fontSize: 12, lineHeight: 16 },
   family: {
     regular: 'System', // Fallback to System until Inter is linked
     medium: 'System',
@@ -124,4 +128,27 @@ export const theme = {
   borderRadius: radius,
   sizes,
   shadows,
+};
+
+// ── Backward-compatible aliases for legacy components ──
+// These re-exports allow older components (collapsible, web-badge, app-tabs,
+// hint-row, themed-text, themed-view) to compile without business-logic changes.
+export const Colors = colors;
+export const Spacing = {
+  ...spacing,
+  half: 4,
+  one: 8,
+  two: 16,
+  three: 24,
+  four: 32,
+  five: 40,
+};
+export const MaxContentWidth = 960;
+export type ThemeColor = keyof typeof colors;
+export const Fonts = {
+  regular: typography.family.regular,
+  medium: typography.family.medium,
+  semiBold: typography.family.semiBold,
+  bold: typography.family.bold,
+  mono: 'SpaceMono',
 };

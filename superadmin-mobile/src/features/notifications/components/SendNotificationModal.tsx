@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   templateChip: {
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
+    borderRadius: theme.borderRadius.pill,
     borderWidth: 1,
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.surface,
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
   },
   btnCancelText: {
-    ...theme.typography.button,
+    ...theme.typography.body,
     color: theme.colors.text,
   },
   btnSubmit: {
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   btnSubmitText: {
-    ...theme.typography.button,
+    ...theme.typography.body,
     color: '#fff',
   }
 });

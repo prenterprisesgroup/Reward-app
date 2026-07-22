@@ -12,7 +12,7 @@ export const useRecentActivityQuery = () => {
     queryKey: queryKeys.superAdmin.activity,
     queryFn: async ({ signal }) => {
       try {
-        const rawData = await dashboardApi.getRecentActivity(10, signal);
+        const rawData = await dashboardApi.getRecentActivity(1, 6, signal);
         return dashboardMapper.toRecentActivity(rawData);
       } catch (error) {
         if (!axios.isCancel(error)) {

@@ -43,7 +43,7 @@ export default function Step3Settlement() {
           accessibilityLabel="UPI Settlement Method"
         >
           <Feather name="send" size={20} color={settlementMethod === 'UPI' ? theme.colors.success : theme.colors.textSecondary} />
-          <Typography style={[styles.methodText, settlementMethod === 'UPI' && styles.methodTextActive]}>UPI</Typography>
+          <Typography style={[styles.methodText, settlementMethod === 'UPI' ? styles.methodTextActive : {}]}>UPI</Typography>
           <View style={[styles.radio, settlementMethod === 'UPI' && styles.radioActive]}>
             {settlementMethod === 'UPI' && <View style={styles.radioInner} />}
           </View>
@@ -57,7 +57,7 @@ export default function Step3Settlement() {
           accessibilityLabel="Bank Account Settlement Method"
         >
           <Feather name="home" size={20} color={settlementMethod === 'BANK' ? theme.colors.success : theme.colors.textSecondary} />
-          <Typography style={[styles.methodText, settlementMethod === 'BANK' && styles.methodTextActive]}>Bank Account</Typography>
+          <Typography style={[styles.methodText, settlementMethod === 'BANK' ? styles.methodTextActive : {}]}>Bank Account</Typography>
           <View style={[styles.radio, settlementMethod === 'BANK' && styles.radioActive]}>
             {settlementMethod === 'BANK' && <View style={styles.radioInner} />}
           </View>

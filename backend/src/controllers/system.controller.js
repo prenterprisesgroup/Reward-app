@@ -142,7 +142,9 @@ async function createBarcodeBatch(req, res, next) {
 async function listBarcodeBatches(req, res, next) {
   try {
     const companyId = req.user.company;
-    if (!companyId) {
+    const isSuperAdmin = req.user.role === ROLES.SUPER_ADMIN;
+    
+    if (!companyId && !isSuperAdmin) {
       throw new HttpError(400, "Company association is required");
     }
 
@@ -785,11 +787,11 @@ async function approveWithdrawal(req, res, next) {
       }
     }
 
-    const withdrawal = await WithdrawalRequest.findOne({
-      _id: withdrawalId,
-      company: companyId,
-      status: WITHDRAWAL_STATUS.PENDING,
-    }).session(session);
+    const withdrawalQuery = { _id: withdrawalId, status: WITHDRAWAL_STATUS.PENDING };
+    if (!isSuperAdmin) {
+      withdrawalQuery.company = companyId;
+    }
+    const withdrawal = await WithdrawalRequest.findOne(withdrawalQuery).session(session);
 
     if (!withdrawal) {
       throw new HttpError(404, "Pending withdrawal request not found");
@@ -908,11 +910,11 @@ async function rejectWithdrawal(req, res, next) {
       }
     }
 
-    const withdrawal = await WithdrawalRequest.findOne({
-      _id: withdrawalId,
-      company: companyId,
-      status: WITHDRAWAL_STATUS.PENDING,
-    }).session(session);
+    const withdrawalQuery = { _id: withdrawalId, status: WITHDRAWAL_STATUS.PENDING };
+    if (!isSuperAdmin) {
+      withdrawalQuery.company = companyId;
+    }
+    const withdrawal = await WithdrawalRequest.findOne(withdrawalQuery).session(session);
 
     if (!withdrawal) {
       throw new HttpError(404, "Pending withdrawal request not found");

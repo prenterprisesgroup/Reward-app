@@ -39,7 +39,7 @@ export default function CreateCompanyAdminScreen() {
   const { data: companyDetails, isLoading: isCompanyLoading } = useCompanyDetailsQuery(id as string);
   const mutation = useCreateCompanyAdminMutation(id as string);
 
-  const methods = useForm<CreateCompanyAdminFormValues>({
+  const methods = useForm<any>({
     resolver: zodResolver(createCompanyAdminSchema),
     defaultValues: {
       fullName: '',
@@ -90,7 +90,7 @@ export default function CreateCompanyAdminScreen() {
           <Feather name="arrow-left" size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
-          <Typography variant="h2" style={styles.headerTitle}>Create Company Admin</Typography>
+          <Typography variant="headingMd" style={styles.headerTitle}>Create Company Admin</Typography>
           <Typography style={styles.headerSubtitle}>Assign an administrator to manage this company.</Typography>
         </View>
         <TouchableOpacity 

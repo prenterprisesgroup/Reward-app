@@ -3,35 +3,38 @@ import { View, StyleSheet, ScrollView } from 'react-native';
 import { Typography } from '../../../components/common/Typography';
 import { theme } from '../../../constants/theme';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useCompanyStatsQuery } from '../hooks/useCompanies';
 
 export function CompanyStatsRow() {
+  const { data, isLoading } = useCompanyStatsQuery();
+
   const stats = [
     {
       icon: <MaterialCommunityIcons name="office-building" size={20} color={theme.colors.success} />,
       iconBg: theme.colors.successBackground,
       title: 'Total Companies',
-      value: '128',
+      value: data?.total?.toString() || '0',
       subtitle: 'All time',
     },
     {
       icon: <Feather name="users" size={20} color={theme.colors.primaryDark} />,
       iconBg: theme.colors.primaryLight + '30',
       title: 'Active Companies',
-      value: '114',
-      subtitle: '89.1% of total',
+      value: data?.active?.toString() || '0',
+      subtitle: data?.total ? `${((data.active / data.total) * 100).toFixed(1)}% of total` : '0% of total',
     },
     {
       icon: <Feather name="clock" size={20} color={theme.colors.warning} />,
       iconBg: theme.colors.warningBackground,
       title: 'Pending Approval',
-      value: '6',
+      value: data?.pending?.toString() || '0',
       subtitle: 'Requires review',
     },
     {
       icon: <Feather name="shield" size={20} color={theme.colors.error} />,
       iconBg: theme.colors.error + '20',
       title: 'Suspended',
-      value: '8',
+      value: data?.suspended?.toString() || '0',
       subtitle: 'Action required',
     },
   ];

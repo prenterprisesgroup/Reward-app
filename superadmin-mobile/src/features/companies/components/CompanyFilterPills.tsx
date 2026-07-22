@@ -8,7 +8,9 @@ const FILTERS = [
   { id: 'all', label: 'All', color: 'transparent' },
   { id: 'active', label: 'Active', color: theme.colors.success },
   { id: 'inactive', label: 'Inactive', color: theme.colors.textTertiary },
-  { id: 'pending', label: 'Pending Verification', color: theme.colors.warning },
+  { id: 'pending', label: 'Pending Approval', color: theme.colors.warning },
+  { id: 'suspended', label: 'Suspended', color: theme.colors.error },
+  { id: 'rejected', label: 'Rejected', color: theme.colors.textTertiary },
 ];
 
 interface CompanyFilterPillsProps {
@@ -42,7 +44,7 @@ export function CompanyFilterPills({ activeFilter, onFilterChange }: CompanyFilt
               <Typography 
                 style={[
                   styles.label,
-                  isActive ? styles.activeLabel : null
+                  isActive ? styles.activeLabel : undefined as any
                 ]}
               >
                 {filter.label}

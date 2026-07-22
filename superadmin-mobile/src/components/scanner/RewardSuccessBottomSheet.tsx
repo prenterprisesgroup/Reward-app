@@ -28,7 +28,7 @@ const localTheme = {
   }
 };
 
-import { ScanResponseData } from '../../../types/backend.types';
+import { ScanResponseData } from '../../types/backend.types';
 
 interface Props {
   visible: boolean;
@@ -102,8 +102,8 @@ export default function RewardSuccessBottomSheet({ visible, onClose, onScanAnoth
         
         {/* Premium Blur Backdrop */}
         <Animated.View style={[styles.backdrop, backdropStyle]}>
-          <BlurView intensity={35} tint="dark" style={StyleSheet.absoluteFillObject}>
-            <TouchableOpacity style={StyleSheet.absoluteFillObject} activeOpacity={1} onPress={onClose} />
+          <BlurView intensity={35} tint="dark" style={StyleSheet.absoluteFill}>
+            <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
           </BlurView>
         </Animated.View>
 
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0,0,0,0.18)', // Subtler overlay since we have blur now
   },
   sheet: {
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   sparklesContainer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 10,
   },
   title: {
@@ -465,6 +465,6 @@ const styles = StyleSheet.create({
   coinsImage: {
     width: SCREEN_WIDTH,
     height: 80,
-    contentFit: 'contain',
+    
   }
 });

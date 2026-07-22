@@ -58,5 +58,6 @@ const barcodeSchema = new mongoose.Schema(
 
 barcodeSchema.index({ company: 1, status: 1 });
 barcodeSchema.index({ batch: 1, status: 1 });
+barcodeSchema.index({ status: 1, redeemedAt: -1 }); // Supports global redeemed scans pagination
 
 module.exports = mongoose.model("Barcode", barcodeSchema);

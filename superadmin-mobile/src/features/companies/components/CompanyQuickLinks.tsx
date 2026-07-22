@@ -5,6 +5,8 @@ import { theme } from '../../../constants/theme';
 import { Feather } from '@expo/vector-icons';
 import { ToastAndroid, Platform, Alert } from 'react-native';
 
+import { useRouter } from 'expo-router';
+
 interface CompanyQuickLinksProps {
   company: {
     id: string;
@@ -12,11 +14,12 @@ interface CompanyQuickLinksProps {
 }
 
 export function CompanyQuickLinks({ company }: CompanyQuickLinksProps) {
+  const router = useRouter();
   const links = [
-    { icon: 'users' as const, title: 'View Workers', subtitle: 'Manage all workers' },
-    { icon: 'grid' as const, title: 'QR Batches', subtitle: 'View all QR batches' },
-    { icon: 'credit-card' as const, title: 'Payment Requests', subtitle: 'Pending & approved' },
-    { icon: 'bar-chart-2' as const, title: 'Reports', subtitle: 'Company reports & logs' },
+    { icon: 'users' as const, title: 'View Workers', subtitle: 'Manage all workers', route: `/(super-admin)/companies/${company.id}/workers` },
+    { icon: 'grid' as const, title: 'QR Batches', subtitle: 'View all QR batches', route: `/(super-admin)/qr-scans?companyId=${company.id}` },
+    { icon: 'credit-card' as const, title: 'Payment Requests', subtitle: 'Pending & approved', route: `/(super-admin)/withdrawals?companyId=${company.id}` },
+    { icon: 'bar-chart-2' as const, title: 'Reports', subtitle: 'Company reports & logs', route: `/(super-admin)/companies/${company.id}/reports` },
   ];
 
   return (
@@ -28,8 +31,9 @@ export function CompanyQuickLinks({ company }: CompanyQuickLinksProps) {
           <TouchableOpacity 
             style={styles.linkRow}
             onPress={() => {
-              if (Platform.OS === 'android') ToastAndroid.show(`${link.title} feature coming soon`, ToastAndroid.SHORT);
-              else Alert.alert('Coming Soon', `${link.title} feature coming soon`);
+              if (link.route) {
+                router.push(link.route as any);
+              }
             }}
           >
             <View style={styles.iconContainer}>

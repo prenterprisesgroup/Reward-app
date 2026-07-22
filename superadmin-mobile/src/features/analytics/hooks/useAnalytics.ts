@@ -19,8 +19,13 @@ export const useGrowthQuery = (period: string = '30d') => {
   return useQuery<AnalyticsOverviewModel, Error>({
     queryKey: queryKeys.analytics.growth(period),
     queryFn: async ({ signal }) => {
-      const dto = await analyticsApi.getGrowth(period, signal);
-      return AnalyticsMapper.mapGrowth(dto);
+      try {
+        const dto = await analyticsApi.getGrowth(period, signal);
+        return AnalyticsMapper.mapGrowth(dto);
+      } catch (err) {
+        console.error('useGrowthQuery Error:', err);
+        throw err;
+      }
     },
     staleTime: 1000 * 60 * 2, // 2 minutes
   });

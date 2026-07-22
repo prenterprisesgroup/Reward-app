@@ -101,7 +101,7 @@ export default function Step1CompanyInfo() {
               onChangeText={onChange}
               accessibilityLabel="Company Name"
               accessibilityHint="Required. Enter the name of the company."
-              accessibilityState={{ invalid: !!error }}
+              
             />
             {error && <Typography style={styles.errorText} accessibilityLiveRegion="polite">{error.message}</Typography>}
           </View>
@@ -121,7 +121,7 @@ export default function Step1CompanyInfo() {
               onChangeText={onChange}
               accessibilityLabel="Industry"
               accessibilityHint="Required. Enter the industry type."
-              accessibilityState={{ invalid: !!error }}
+              
             />
             {error && <Typography style={styles.errorText} accessibilityLiveRegion="polite">{error.message}</Typography>}
           </View>
@@ -142,7 +142,7 @@ export default function Step1CompanyInfo() {
               autoCapitalize="characters"
               accessibilityLabel="GST Number"
               accessibilityHint="Required. Enter a valid 15-character GST number."
-              accessibilityState={{ invalid: !!error }}
+              
             />
             {error && <Typography style={styles.errorText} accessibilityLiveRegion="polite">{error.message}</Typography>}
           </View>
@@ -164,7 +164,7 @@ export default function Step1CompanyInfo() {
               autoCapitalize="none"
               accessibilityLabel="Company Email"
               accessibilityHint="Required. Enter a valid email address."
-              accessibilityState={{ invalid: !!error }}
+              
             />
             {error && <Typography style={styles.errorText} accessibilityLiveRegion="polite">{error.message}</Typography>}
           </View>
@@ -185,7 +185,7 @@ export default function Step1CompanyInfo() {
               keyboardType="phone-pad"
               accessibilityLabel="Phone Number"
               accessibilityHint="Required. Enter a valid phone number."
-              accessibilityState={{ invalid: !!error }}
+              
             />
             {error && <Typography style={styles.errorText} accessibilityLiveRegion="polite">{error.message}</Typography>}
           </View>
@@ -207,7 +207,7 @@ export default function Step1CompanyInfo() {
               autoCapitalize="none"
               accessibilityLabel="Website URL"
               accessibilityHint="Optional. Enter the company website URL."
-              accessibilityState={{ invalid: !!error }}
+              
             />
             {error && <Typography style={styles.errorText} accessibilityLiveRegion="polite">{error.message}</Typography>}
           </View>

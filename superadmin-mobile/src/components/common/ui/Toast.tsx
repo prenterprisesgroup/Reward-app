@@ -7,9 +7,9 @@ import Animated, {
   withTiming, 
   runOnJS 
 } from 'react-native-reanimated';
-import { Typography } from '../common/Typography';
-import { theme } from '../../constants/theme';
-import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react-native';
+import { Typography } from '../Typography';
+import { theme } from '../../../constants/theme';
+import { Feather } from '@expo/vector-icons';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -24,14 +24,14 @@ export interface ToastProps {
 const getToastConfig = (type: ToastType) => {
   switch (type) {
     case 'success':
-      return { icon: CheckCircle2, color: '#10B981', bgColor: '#ECFDF5', borderColor: '#A7F3D0' };
+      return { icon: 'check-circle' as const, color: '#10B981', bgColor: '#ECFDF5', borderColor: '#A7F3D0' };
     case 'error':
-      return { icon: AlertCircle, color: '#EF4444', bgColor: '#FEF2F2', borderColor: '#FECACA' };
+      return { icon: 'alert-circle' as const, color: '#EF4444', bgColor: '#FEF2F2', borderColor: '#FECACA' };
     case 'warning':
-      return { icon: Info, color: '#F59E0B', bgColor: '#FFFBEB', borderColor: '#FDE68A' };
+      return { icon: 'alert-triangle' as const, color: '#F59E0B', bgColor: '#FFFBEB', borderColor: '#FDE68A' };
     case 'info':
     default:
-      return { icon: Info, color: '#3B82F6', bgColor: '#EFF6FF', borderColor: '#BFDBFE' };
+      return { icon: 'info' as const, color: '#3B82F6', bgColor: '#EFF6FF', borderColor: '#BFDBFE' };
   }
 };
 
@@ -73,22 +73,15 @@ export const Toast = React.memo(({
     opacity: opacity.value,
   }));
 
-  // Avoid reading shared value during render to prevent Reanimated warnings.
-  // The component is wrapped in pointerEvents="none" when invisible anyway.
-  if (!visible) {
-    // We could return null safely if we didn't want exit animations,
-    // but to support exit animations we must keep it mounted.
-  }
-
-  const { icon: Icon, color, bgColor, borderColor } = getToastConfig(type);
+  const { icon, color, bgColor, borderColor } = getToastConfig(type);
 
   return (
     <Animated.View style={[styles.container, animatedStyle]} pointerEvents={visible ? "auto" : "none"}>
       <View style={[styles.toast, { backgroundColor: bgColor, borderColor }]}>
-        <Icon size={20} color={color} style={styles.icon} />
+        <Feather name={icon} size={20} color={color} style={styles.icon} />
         <Typography style={[styles.message, { color: '#1F2937' }]}>{message}</Typography>
-        <TouchableOpacity onPress={handleHide} style={styles.closeBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <X size={16} color="#6B7280" />
+        <TouchableOpacity onPress={handleHide} style={styles.closeBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessibilityRole="button" accessibilityLabel="Close Toast">
+          <Feather name="x" size={16} color="#6B7280" />
         </TouchableOpacity>
       </View>
     </Animated.View>

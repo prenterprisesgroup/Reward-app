@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Typography } from '../common/Typography';
 import { theme } from '../../constants/theme';
 import { Feather } from '@expo/vector-icons';
 import Animated, { FadeInUp } from 'react-native-reanimated';
+
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 export interface PlatformStatCardProps {
   iconName: keyof typeof Feather.glyphMap;
@@ -13,6 +15,7 @@ export interface PlatformStatCardProps {
   trendText: string;
   trendType?: 'positive' | 'warning' | 'neutral';
   index: number;
+  onPress?: () => void;
 }
 
 export const PlatformStatCard: React.FC<PlatformStatCardProps> = React.memo(({
@@ -22,7 +25,8 @@ export const PlatformStatCard: React.FC<PlatformStatCardProps> = React.memo(({
   subtitle,
   trendText,
   trendType = 'positive',
-  index
+  index,
+  onPress
 }) => {
   const getTrendColor = () => {
     switch (trendType) {
@@ -43,9 +47,11 @@ export const PlatformStatCard: React.FC<PlatformStatCardProps> = React.memo(({
   };
 
   return (
-    <Animated.View 
+    <AnimatedTouchableOpacity 
       entering={FadeInUp.delay(150 + (index * 50)).duration(400)}
       style={styles.cardContainer}
+      onPress={onPress}
+      activeOpacity={onPress ? 0.7 : 1}
     >
       <View style={styles.headerRow}>
         <View style={styles.iconContainer}>
@@ -64,7 +70,7 @@ export const PlatformStatCard: React.FC<PlatformStatCardProps> = React.memo(({
         {trendType === 'warning' && <Feather name="arrow-up-right" size={14} color={getTrendColor()} style={styles.trendIcon} />}
         <Typography style={[styles.trendText, { color: getTrendColor() }]}>{trendText}</Typography>
       </View>
-    </Animated.View>
+    </AnimatedTouchableOpacity>
   );
 });
 

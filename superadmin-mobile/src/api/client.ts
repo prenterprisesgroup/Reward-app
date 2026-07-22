@@ -1,7 +1,11 @@
 import axios from 'axios';
+import { Platform } from 'react-native';
 
-// Fallback to local network IP for testing
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.154.208.12:5000';
+// Bypassing .env cache. 
+// Web uses localhost. Mobile uses LAN IP.
+const BASE_URL = Platform.OS === 'web' 
+  ? 'http://localhost:5000' 
+  : 'http://10.130.66.135:5000';
 
 console.log('API Client BASE_URL:', BASE_URL);
 

@@ -14,6 +14,6 @@ export function usePaymentRequestsQuery(
     getNextPageParam: (lastPage) => lastPage.hasNextPage ? lastPage.page + 1 : undefined,
     staleTime: 1000 * 60 * 1, // 1 minute
     retry: 2,
-    keepPreviousData: true,
+    initialPageParam: 1,
   });
 }

@@ -155,6 +155,24 @@ export const SettingsForm = ({ initialData, onDirtyChange, onResetTriggered }: P
             )}
           />
         </View>
+
+        <View style={styles.row}>
+          <View style={styles.rowText}>
+            <Text style={styles.label}>Notifications Module</Text>
+          </View>
+          <Controller
+            control={control}
+            name="featureFlags.notificationsEnabled"
+            render={({ field: { onChange, value } }) => (
+              <Switch
+                value={value}
+                onValueChange={onChange}
+                trackColor={{ false: theme.colors.border, true: theme.colors.primaryDark }}
+                disabled={initialData.permissions.featureFlags === 'READ_ONLY'}
+              />
+            )}
+          />
+        </View>
       </View>
 
       {/* Rewards Limits */}
@@ -199,6 +217,51 @@ export const SettingsForm = ({ initialData, onDirtyChange, onResetTriggered }: P
         </View>
         {errors.rewards?.maxRewardAmount && (
           <Text style={styles.errorText}>{errors.rewards.maxRewardAmount.message}</Text>
+        )}
+      </View>
+
+      {/* Withdrawals Limits */}
+      <View style={styles.section}>
+        {renderSectionHeader('Withdrawals', 'Configure limits for wallet withdrawals')}
+        
+        <View style={styles.inputGroup}>
+          <View style={styles.halfInput}>
+            <Text style={styles.label}>Min Amount (₹)</Text>
+            <Controller
+              control={control}
+              name="withdrawals.minWithdrawalAmount"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[styles.input, errors.withdrawals?.minWithdrawalAmount && styles.inputError]}
+                  value={value.toString()}
+                  onChangeText={(val) => onChange(Number(val) || 0)}
+                  onBlur={onBlur}
+                  keyboardType="numeric"
+                  editable={initialData.permissions.withdrawals !== 'READ_ONLY'}
+                />
+              )}
+            />
+          </View>
+          <View style={styles.halfInput}>
+            <Text style={styles.label}>Daily Limit (₹)</Text>
+            <Controller
+              control={control}
+              name="withdrawals.dailyWithdrawalLimit"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[styles.input, errors.withdrawals?.dailyWithdrawalLimit && styles.inputError]}
+                  value={value.toString()}
+                  onChangeText={(val) => onChange(Number(val) || 0)}
+                  onBlur={onBlur}
+                  keyboardType="numeric"
+                  editable={initialData.permissions.withdrawals !== 'READ_ONLY'}
+                />
+              )}
+            />
+          </View>
+        </View>
+        {errors.withdrawals?.dailyWithdrawalLimit && (
+          <Text style={styles.errorText}>{errors.withdrawals.dailyWithdrawalLimit.message}</Text>
         )}
       </View>
 
@@ -252,7 +315,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   sectionTitle: {
-    ...theme.typography.h4,
+    ...theme.typography.h3,
     color: theme.colors.text,
   },
   sectionDescription: {
@@ -329,7 +392,7 @@ const styles = StyleSheet.create({
     marginRight: theme.spacing.sm,
   },
   btnResetText: {
-    ...theme.typography.button,
+    ...theme.typography.body,
     color: theme.colors.textSecondary,
   },
   btnSave: {
@@ -340,7 +403,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   btnSaveText: {
-    ...theme.typography.button,
+    ...theme.typography.body,
     color: '#fff',
   }
 });

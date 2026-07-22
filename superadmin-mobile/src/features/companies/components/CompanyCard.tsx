@@ -5,7 +5,7 @@ import { theme } from '../../../constants/theme';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { ToastAndroid, Platform, Alert } from 'react-native';
 
-type CompanyStatus = 'ACTIVE' | 'PENDING' | 'SUSPENDED';
+import { CompanyStatus } from '../types/company.types';
 
 interface CompanyCardProps {
   id: string;
@@ -42,6 +42,7 @@ export const CompanyCard = memo(function CompanyCard({
       case 'ACTIVE': return theme.colors.success;
       case 'PENDING': return theme.colors.warning;
       case 'SUSPENDED': return theme.colors.error;
+      case 'REJECTED': return theme.colors.textSecondary;
     }
   };
 
@@ -50,6 +51,7 @@ export const CompanyCard = memo(function CompanyCard({
       case 'ACTIVE': return theme.colors.successBackground;
       case 'PENDING': return theme.colors.warningBackground;
       case 'SUSPENDED': return theme.colors.error + '15';
+      case 'REJECTED': return theme.colors.disabledSurface;
     }
   };
 
@@ -58,13 +60,21 @@ export const CompanyCard = memo(function CompanyCard({
       case 'ACTIVE': return { name: 'pause' as const, color: theme.colors.error, label: 'Suspend' };
       case 'PENDING': return { name: 'check' as const, color: theme.colors.success, label: 'Approve' };
       case 'SUSPENDED': return { name: 'play' as const, color: theme.colors.success, label: 'Activate' };
+      case 'REJECTED': return { name: 'x' as const, color: theme.colors.textSecondary, label: 'Rejected' };
     }
   };
 
   const actionDetails = getActionIcon();
 
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={onView}>
+    <TouchableOpacity 
+      style={styles.card} 
+      activeOpacity={0.8} 
+      onPress={onView}
+      accessibilityRole="button"
+      accessibilityLabel={`View details for company ${name}`}
+      accessibilityHint="Navigates to the company details screen"
+    >
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           {logoUrl ? (
@@ -115,6 +125,8 @@ export const CompanyCard = memo(function CompanyCard({
           </View>
           <TouchableOpacity 
             style={styles.moreButton}
+            accessibilityRole="button"
+            accessibilityLabel="More options"
             onPress={() => {
               if (Platform.OS === 'android') ToastAndroid.show('More options coming soon', ToastAndroid.SHORT);
               else Alert.alert('Coming Soon', 'More options coming soon');
@@ -146,21 +158,36 @@ export const CompanyCard = memo(function CompanyCard({
         </View>
 
         <View style={styles.actionsContainer}>
-          <TouchableOpacity style={styles.actionBtn} onPress={onView}>
+          <TouchableOpacity 
+            style={styles.actionBtn} 
+            onPress={onView}
+            accessibilityRole="button"
+            accessibilityLabel="View company details"
+          >
             <View style={[styles.actionIconBg, { borderColor: theme.colors.textSecondary }]}>
               <Feather name="eye" size={14} color={theme.colors.textSecondary} />
             </View>
             <Typography style={styles.actionLabel}>View</Typography>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.actionBtn} onPress={onEdit}>
+          <TouchableOpacity 
+            style={styles.actionBtn} 
+            onPress={onEdit}
+            accessibilityRole="button"
+            accessibilityLabel="Edit company details"
+          >
             <View style={[styles.actionIconBg, { borderColor: theme.colors.primaryDark }]}>
               <Feather name="edit-2" size={14} color={theme.colors.primaryDark} />
             </View>
             <Typography style={styles.actionLabel}>Edit</Typography>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.actionBtn} onPress={onAction}>
+          <TouchableOpacity 
+            style={styles.actionBtn} 
+            onPress={onAction}
+            accessibilityRole="button"
+            accessibilityLabel={`${actionDetails.label} company`}
+          >
             <View style={[styles.actionIconBg, { borderColor: actionDetails.color }]}>
               <Feather name={actionDetails.name} size={14} color={actionDetails.color} />
             </View>

@@ -221,9 +221,9 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
-    ...Platform.select({
+    ...(Platform.select as any)({
       ios: theme.shadows.sm,
-      android: { elevation: 2 },
+      android: { elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
       web: theme.shadows.sm,
     }),
   }

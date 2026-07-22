@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primaryDark + '15',
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 2,
-    borderRadius: theme.borderRadius.full,
+    borderRadius: theme.radius.pill,
   },
   actionText: {
     ...theme.typography.caption,

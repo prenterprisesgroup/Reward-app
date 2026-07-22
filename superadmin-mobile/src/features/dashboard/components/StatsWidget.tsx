@@ -1,13 +1,93 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useDashboardStatsQuery } from '../hooks/useDashboardStatsQuery';
 import { PlatformStatCard } from '../../../components/super-admin/PlatformStatCard';
 import { Typography } from '../../../components/common/Typography';
 import { theme } from '../../../constants/theme';
 import { Feather } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { ToastAndroid, Platform, Alert } from 'react-native';
 
-export function StatsWidget() {
-  const { data, isLoading, isError, error } = useDashboardStatsQuery();
+export const StatsWidget = React.memo(function StatsWidget() {
+  const { data, isLoading, isError } = useDashboardStatsQuery();
+  const router = useRouter();
+
+  const handleComingSoon = () => {
+    if (Platform.OS === 'android') {
+      ToastAndroid.show('Dedicated view coming soon', ToastAndroid.SHORT);
+    } else {
+      Alert.alert('Coming Soon', 'Dedicated view coming soon');
+    }
+  };
+
+  const navigateToAnalyticsReward = () => {
+    router.push({
+      pathname: '/(super-admin)/analytics',
+      params: { section: 'rewards', period: '30d' }
+    });
+  };
+
+  // Memoized: prevents rebuilding 6-object array on every render.
+  // Only recomputes when `data` reference changes (i.e., new API response).
+  const stats = useMemo(() => {
+    if (!data) return [];
+    return [
+      {
+        iconName: 'briefcase' as const,
+        title: 'Total Companies',
+        value: data.totalCompanies.toString(),
+        subtitle: 'All time',
+        trendText: 'Live',
+        trendType: 'positive' as const,
+        onPress: () => router.push('/(super-admin)/companies')
+      },
+      {
+        iconName: 'users' as const,
+        title: 'Active Workers',
+        value: data.activeWorkers.toString(),
+        subtitle: 'All time',
+        trendText: 'Live',
+        trendType: 'positive' as const,
+        onPress: () => router.push('/(super-admin)/workers')
+      },
+      {
+        iconName: 'grid' as const,
+        title: 'QR Generated',
+        value: data.qrGenerated.toString(),
+        subtitle: 'Across platform',
+        trendText: 'Live',
+        trendType: 'positive' as const,
+        onPress: () => router.push('/(super-admin)/qr-batches')
+      },
+      {
+        iconName: 'check-circle' as const,
+        title: 'QR Redeemed',
+        value: data.qrRedeemed.toString(),
+        subtitle: 'Across platform',
+        trendText: 'Live',
+        trendType: 'positive' as const,
+        onPress: () => router.push('/(super-admin)/qr-scans')
+      },
+      {
+        iconName: 'credit-card' as const,
+        title: 'Pending Withdrawals',
+        value: data.pendingWithdrawalsCount.toString(),
+        subtitle: 'Requires action',
+        trendText: 'Urgent',
+        trendType: 'warning' as const,
+        onPress: () => router.push('/(super-admin)/withdrawals')
+      },
+      {
+        iconName: 'gift' as const,
+        title: 'Rewards Distributed',
+        value: `₹${data.totalRewardsPaid}`,
+        subtitle: 'All Time',
+        trendText: 'Live',
+        trendType: 'positive' as const,
+        onPress: navigateToAnalyticsReward
+      }
+    ];
+  }, [data]);
 
   if (isLoading) {
     return (
@@ -33,57 +113,6 @@ export function StatsWidget() {
 
   if (!data) return null;
 
-  const stats = [
-    {
-      iconName: 'briefcase' as const,
-      title: 'Total Companies',
-      value: data.totalCompanies.toString(),
-      subtitle: 'All time',
-      trendText: 'Live',
-      trendType: 'positive' as const
-    },
-    {
-      iconName: 'users' as const,
-      title: 'Active Workers',
-      value: data.activeWorkers.toString(),
-      subtitle: 'All time',
-      trendText: 'Live',
-      trendType: 'positive' as const
-    },
-    {
-      iconName: 'grid' as const,
-      title: 'QR Generated',
-      value: data.qrGenerated.toString(),
-      subtitle: 'Across platform',
-      trendText: 'Live',
-      trendType: 'positive' as const
-    },
-    {
-      iconName: 'check-circle' as const,
-      title: 'QR Redeemed',
-      value: data.qrRedeemed.toString(),
-      subtitle: 'Across platform',
-      trendText: 'Live',
-      trendType: 'positive' as const
-    },
-    {
-      iconName: 'credit-card' as const,
-      title: 'Pending Withdrawals',
-      value: data.pendingWithdrawalsCount.toString(),
-      subtitle: 'Requires action',
-      trendText: 'Urgent',
-      trendType: 'warning' as const
-    },
-    {
-      iconName: 'gift' as const,
-      title: 'Rewards Distributed',
-      value: `₹${data.totalRewardsPaid}`,
-      subtitle: 'All Time',
-      trendText: 'Live',
-      trendType: 'positive' as const
-    }
-  ];
-
   return (
     <View style={styles.gridContainer}>
       {stats.map((stat, index) => (
@@ -96,11 +125,12 @@ export function StatsWidget() {
           subtitle={stat.subtitle}
           trendText={stat.trendText}
           trendType={stat.trendType}
+          onPress={stat.onPress}
         />
       ))}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   gridContainer: {

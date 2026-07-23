@@ -11,6 +11,7 @@ interface CompanyAdminContactCardProps {
     name: string;
     email: string;
     phone: string;
+    profilePhotoUrl?: string | null;
   } | null;
   admins: any[];
 }
@@ -24,14 +25,22 @@ export function CompanyAdminContactCard({ primaryAdmin, admins }: CompanyAdminCo
     );
   }
 
+  const initial = primaryAdmin.name ? primaryAdmin.name.charAt(0).toUpperCase() : 'A';
+
   return (
     <View style={styles.card}>
       <View style={styles.leftContent}>
         <View style={styles.avatarContainer}>
-          <Image 
-            source={{ uri: 'https://i.pravatar.cc/150?img=11' }} 
-            style={styles.avatar} 
-          />
+          {primaryAdmin.profilePhotoUrl ? (
+            <Image 
+              source={{ uri: primaryAdmin.profilePhotoUrl }} 
+              style={styles.avatar} 
+            />
+          ) : (
+            <View style={[styles.avatar, styles.initialsAvatar]}>
+              <Typography variant="headingSm" style={styles.initialsText}>{initial}</Typography>
+            </View>
+          )}
         </View>
         
         <View style={styles.info}>
@@ -137,6 +146,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+  },
+  initialsAvatar: {
+    backgroundColor: theme.colors.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  initialsText: {
+    color: theme.colors.primary,
+    fontWeight: 'bold',
   },
   info: {
     flex: 1,

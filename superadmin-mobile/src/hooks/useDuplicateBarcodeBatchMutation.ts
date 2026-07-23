@@ -12,11 +12,11 @@ export function useDuplicateBarcodeBatchMutation() {
       queryClient.invalidateQueries({ queryKey: ['barcode-batches'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard-activity'] });
-      showToast('success', `Duplicated ${data.batchName} successfully!`);
+      showToast(`Duplicated ${data.batchName} successfully!`, 'success');
     },
     onError: (error: any) => {
       const message = error?.response?.data?.message || 'Failed to duplicate batch';
-      showToast('error', message);
+      showToast(message, 'error');
     }
   });
 }

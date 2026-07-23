@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRecentActivityQuery } from '../hooks/useRecentActivityQuery';
 import { PlatformTimeline } from '../../../components/super-admin/PlatformTimeline';
@@ -7,9 +7,39 @@ import { theme } from '../../../constants/theme';
 import { Feather } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
 import { ToastAndroid, Platform, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
 
-export function ActivityWidget() {
+export const ActivityWidget = React.memo(function ActivityWidget() {
   const { data, isLoading, isError } = useRecentActivityQuery();
+  const router = useRouter();
+
+  // Memoized: formatDistanceToNow is a non-trivial date computation.
+  // Previously ran on every parent render. Now only recomputes when data changes.
+  const events = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    return data.map(item => {
+      let iconName = 'activity';
+      let title = 'Platform Activity';
+      let subtitle = 'Unknown activity occurred';
+
+      if (item.type === 'REWARD') {
+        iconName = 'gift';
+        title = 'Reward Distributed';
+        subtitle = `₹${item.amount} distributed by ${item.companyName}`;
+      } else if (item.type === 'WITHDRAWAL') {
+        iconName = 'credit-card';
+        title = `Withdrawal ${item.status}`;
+        subtitle = `₹${item.amount} requested by ${item.workerName}`;
+      }
+
+      return {
+        iconName,
+        title,
+        subtitle,
+        timeText: formatDistanceToNow(item.timestamp, { addSuffix: true }),
+      };
+    });
+  }, [data]);
 
   if (isLoading) {
     return (
@@ -42,30 +72,6 @@ export function ActivityWidget() {
     );
   }
 
-  // Map backend normalized data to timeline props
-  const events = data.map(item => {
-    let iconName = 'activity';
-    let title = 'Platform Activity';
-    let subtitle = 'Unknown activity occurred';
-
-    if (item.type === 'REWARD') {
-      iconName = 'gift';
-      title = 'Reward Distributed';
-      subtitle = `₹${item.amount} distributed by ${item.companyName}`;
-    } else if (item.type === 'WITHDRAWAL') {
-      iconName = 'credit-card';
-      title = `Withdrawal ${item.status}`;
-      subtitle = `₹${item.amount} requested by ${item.workerName}`;
-    }
-
-    return {
-      iconName,
-      title,
-      subtitle,
-      timeText: formatDistanceToNow(item.timestamp, { addSuffix: true }),
-    };
-  });
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -73,10 +79,7 @@ export function ActivityWidget() {
         <TouchableOpacity 
           style={styles.viewAllBtn} 
           accessibilityRole="button"
-          onPress={() => {
-            if (Platform.OS === 'android') ToastAndroid.show('Full activity log coming soon', ToastAndroid.SHORT);
-            else Alert.alert('Coming Soon', 'Full activity log coming soon');
-          }}
+          onPress={() => router.push('/(super-admin)/activity')}
         >
           <Typography style={styles.viewAllText}>View All</Typography>
           <Feather name="chevron-right" size={16} color={theme.colors.primaryDark} />
@@ -85,7 +88,7 @@ export function ActivityWidget() {
       <PlatformTimeline events={events} />
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

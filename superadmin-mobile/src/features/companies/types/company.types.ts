@@ -118,3 +118,16 @@ export interface FrontendCompany {
   qrBatches: number;
   rewardsDistributed: number;
 }
+
+export interface BackendCompanyWorker {
+  id: string;
+  name: string;
+  phone: string;
+  status: boolean;
+  profilePhotoUrl: string | null;
+  totalRewardsEarned: number;
+  totalQrScans: number;
+  lastScanDate: string;
+  joinDate: string;
+  lastRewardAmount: number;
+}

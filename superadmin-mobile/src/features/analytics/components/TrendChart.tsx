@@ -4,8 +4,12 @@ import { LineChart } from 'react-native-gifted-charts/dist/LineChart';
 import { useAnalyticsTrendsQuery } from '../hooks/useAnalytics';
 import { theme } from '../../../constants/theme';
 
-export const TrendChart = memo(() => {
-  const { data, isLoading, isError } = useAnalyticsTrendsQuery('30d');
+interface TrendChartProps {
+  period?: '7d' | '30d' | '1y';
+}
+
+export const TrendChart = memo(({ period = '30d' }: TrendChartProps) => {
+  const { data, isLoading, isError } = useAnalyticsTrendsQuery(period);
 
   if (isLoading) {
     return (
@@ -39,7 +43,7 @@ export const TrendChart = memo(() => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Rewards Trend (Last 30 Days)</Text>
+      <Text style={styles.sectionTitle}>Rewards Trend ({period === '7d' ? 'Last 7 Days' : period === '30d' ? 'Last 30 Days' : 'Last Year'})</Text>
       <View style={styles.chartContainer}>
         <LineChart
           data={chartData}

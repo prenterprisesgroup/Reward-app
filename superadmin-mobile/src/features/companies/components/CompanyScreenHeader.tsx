@@ -5,11 +5,16 @@ import { theme } from '../../../constants/theme';
 import { Feather } from '@expo/vector-icons';
 import { ToastAndroid, Platform, Alert } from 'react-native';
 
+import { useRouter } from 'expo-router';
+
 interface CompanyScreenHeaderProps {
   totalCompanies: number;
 }
 
 export function CompanyScreenHeader({ totalCompanies }: CompanyScreenHeaderProps) {
+  const router = useRouter();
+  const unreadCount = 0; // Coming soon
+
   return (
     <View style={styles.container}>
       <View style={styles.titleSection}>
@@ -26,11 +31,10 @@ export function CompanyScreenHeader({ totalCompanies }: CompanyScreenHeaderProps
         <TouchableOpacity 
           style={styles.iconButton}
           onPress={() => {
-            if (Platform.OS === 'android') ToastAndroid.show('Notifications coming soon', ToastAndroid.SHORT);
-            else Alert.alert('Coming Soon', 'Notifications coming soon');
+            router.push('/(super-admin)/inbox');
           }}
         >
-          <View style={styles.notificationDot} />
+          {unreadCount > 0 && <View style={styles.notificationDot} />}
           <Feather name="bell" size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
         <TouchableOpacity 

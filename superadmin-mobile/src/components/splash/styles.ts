@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
   },
   // --- Background Decor ---
   backgroundContainer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     overflow: 'hidden',
     zIndex: 0,
   },

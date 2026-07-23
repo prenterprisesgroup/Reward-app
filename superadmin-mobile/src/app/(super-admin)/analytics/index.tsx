@@ -1,9 +1,11 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 import { theme } from '../../../constants/theme';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../api/queryKeys';
+import { ScreenHeader } from '../../../components/common/ScreenHeader';
 
 // Analytics Widgets
 import { BusinessOverview } from '../../../features/analytics/components/BusinessOverview';
@@ -14,6 +16,17 @@ import { TopCompanies } from '../../../features/analytics/components/TopCompanie
 export default function AnalyticsScreen() {
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+  const params = useLocalSearchParams();
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [rewardsY, setRewardsY] = useState(0);
+
+  useEffect(() => {
+    if (params.section === 'rewards' && rewardsY > 0) {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({ y: rewardsY - 20, animated: true });
+      }, 300);
+    }
+  }, [params.section, rewardsY]);
 
   // Independent refresh logic - ONLY invalidates analytics queries
   const onRefresh = useCallback(async () => {
@@ -28,8 +41,10 @@ export default function AnalyticsScreen() {
   }, [queryClient]);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['right', 'left']}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <ScreenHeader title="Analytics" subtitle="Business performance overview" />
       <ScrollView 
+        ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -44,7 +59,9 @@ export default function AnalyticsScreen() {
       >
         <View style={styles.content}>
           <BusinessOverview />
-          <TrendChart />
+          <View onLayout={(e) => setRewardsY(e.nativeEvent.layout.y)}>
+            <TrendChart period={(params.period as any) || '30d'} />
+          </View>
           <TopCompanies />
           <GrowthChart />
         </View>
@@ -63,7 +80,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 100, // Space for Bottom Navigation
-    paddingTop: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
   },
   content: {
     flex: 1,

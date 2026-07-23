@@ -1,19 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Typography } from '../../../components/common/Typography';
 import { theme } from '../../../constants/theme';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { ToastAndroid, Platform, Alert } from 'react-native';
+import { CompanyActionSheet } from './CompanyActionSheet';
 
 interface CompanyDetailsHeaderProps {
   company: {
+    id: string;
     name: string;
+    status: string;
   };
 }
 
 export function CompanyDetailsHeader({ company }: CompanyDetailsHeaderProps) {
   const router = useRouter();
+  const [showOptions, setShowOptions] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -28,13 +31,16 @@ export function CompanyDetailsHeader({ company }: CompanyDetailsHeaderProps) {
 
       <TouchableOpacity 
         style={styles.iconButton}
-        onPress={() => {
-          if (Platform.OS === 'android') ToastAndroid.show('Company settings coming soon', ToastAndroid.SHORT);
-          else Alert.alert('Coming Soon', 'Company settings coming soon');
-        }}
+        onPress={() => setShowOptions(true)}
       >
         <Feather name="more-vertical" size={24} color={theme.colors.textPrimary} />
       </TouchableOpacity>
+
+      <CompanyActionSheet 
+        visible={showOptions} 
+        onClose={() => setShowOptions(false)} 
+        company={company} 
+      />
     </View>
   );
 }

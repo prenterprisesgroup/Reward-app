@@ -37,7 +37,7 @@ export const reportsApi = {
     if (format === 'EXCEL') extension = 'xlsx';
     if (format === 'PDF') extension = 'pdf';
 
-    const fileUri = `${FileSystem.documentDirectory}report_${jobId}.${extension}`;
+    const fileUri = `${(FileSystem as any).documentDirectory}report_${jobId}.${extension}`;
 
     // Download to local file system
     const downloadRes = await FileSystem.downloadAsync(url, fileUri, {

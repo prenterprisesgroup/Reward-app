@@ -1,4 +1,4 @@
-import apiClient from '../../../api/client';
+import { apiClient } from '../../../api/client';
 import { AnalyticsTrendsDTO, AnalyticsGrowthDTO, TopCompanyDTO } from '../types/analytics.types';
 
 export const analyticsApi = {

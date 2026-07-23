@@ -1,46 +1,48 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Typography } from '../common/Typography';
 import { theme } from '../../constants/theme';
 import { QuickActionCard } from './QuickActionCard';
 import { useRouter } from 'expo-router';
 
-export function QuickActionsSection() {
+export const QuickActionsSection = React.memo(function QuickActionsSection() {
   const router = useRouter();
-  
-  const actions = [
-    { 
-      title: 'Manage\nCompanies', 
+
+  // Memoized: actions array with router.push closures was rebuilt on every render.
+  // Now only re-created if router reference changes (essentially never).
+  const actions = useMemo(() => [
+    {
+      title: 'Manage\nCompanies',
       iconName: 'briefcase' as const,
       onPress: () => router.push('/(super-admin)/companies')
     },
-    { 
-      title: 'Company\nAdmins', 
+    {
+      title: 'Company\nAdmins',
       iconName: 'user' as const,
       onPress: () => router.push('/(super-admin)/companies')
     },
-    { 
-      title: 'Analytics', 
+    {
+      title: 'Analytics',
       iconName: 'bar-chart-2' as const,
       onPress: () => router.push('/(super-admin)/analytics')
     },
-    { 
-      title: 'Platform\nSettings', 
+    {
+      title: 'Platform\nSettings',
       iconName: 'settings' as const,
       onPress: () => router.push('/(super-admin)/settings')
     },
-  ];
+  ], [router]);
 
   return (
     <View style={styles.container}>
       <Typography style={styles.sectionTitle} variant="title">Quick Actions</Typography>
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         {actions.map((action, index) => (
-          <QuickActionCard 
+          <QuickActionCard
             key={index}
             index={index}
             title={action.title}
@@ -51,7 +53,7 @@ export function QuickActionsSection() {
       </ScrollView>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

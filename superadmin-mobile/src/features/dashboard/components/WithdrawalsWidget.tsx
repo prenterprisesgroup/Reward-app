@@ -1,14 +1,23 @@
-import React from 'react';
-import { View, ActivityIndicator, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
 import { usePendingWithdrawalsQuery } from '../hooks/usePendingWithdrawalsQuery';
+import { WithdrawalListItem } from '../../../components/super-admin/WithdrawalListItem';
 import { Typography } from '../../../components/common/Typography';
 import { theme } from '../../../constants/theme';
 import { Feather } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
 import { ToastAndroid, Platform, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
 
-export function WithdrawalsWidget() {
+export const WithdrawalsWidget = React.memo(function WithdrawalsWidget() {
   const { data, isLoading, isError } = usePendingWithdrawalsQuery();
+  const router = useRouter();
+
+  // Stabilized: prevents new function reference on every render
+  const handleViewAll = useCallback(() => {
+    if (Platform.OS === 'android') ToastAndroid.show('Full withdrawals list coming soon', ToastAndroid.SHORT);
+    else Alert.alert('Coming Soon', 'Full withdrawals list coming soon');
+  }, []);
 
   if (isLoading) {
     return (
@@ -41,17 +50,16 @@ export function WithdrawalsWidget() {
     );
   }
 
+  const displayedItems = data.slice(0, 5);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Typography style={styles.title} variant="title">Pending Withdrawals</Typography>
-        <TouchableOpacity 
-          style={styles.viewAllBtn} 
+        <TouchableOpacity
+          style={styles.viewAllBtn}
           accessibilityRole="button"
-          onPress={() => {
-            if (Platform.OS === 'android') ToastAndroid.show('Full withdrawals list coming soon', ToastAndroid.SHORT);
-            else Alert.alert('Coming Soon', 'Full withdrawals list coming soon');
-          }}
+          onPress={() => router.push('/(super-admin)/withdrawals')}
         >
           <Typography style={styles.viewAllText}>View All</Typography>
           <Feather name="chevron-right" size={16} color={theme.colors.primaryDark} />
@@ -59,33 +67,17 @@ export function WithdrawalsWidget() {
       </View>
 
       <View style={styles.listContainer}>
-        {data.slice(0, 5).map((withdrawal, index) => (
-          <View 
-            key={withdrawal.id} 
-            style={[
-              styles.withdrawalItem,
-              index === data.slice(0, 5).length - 1 && { borderBottomWidth: 0 }
-            ]}
-          >
-            <View style={styles.withdrawalInfo}>
-              <Typography variant="body" weight="semiBold" color="textPrimary">
-                {withdrawal.worker.name}
-              </Typography>
-              <Typography variant="caption" color="textSecondary">
-                {withdrawal.companyName} • {formatDistanceToNow(withdrawal.requestDate, { addSuffix: true })}
-              </Typography>
-            </View>
-            <View style={styles.amountContainer}>
-              <Typography variant="body" weight="bold" color="textPrimary">
-                ₹{withdrawal.amount}
-              </Typography>
-            </View>
-          </View>
+        {displayedItems.map((withdrawal, index) => (
+          <WithdrawalListItem
+            key={withdrawal.id}
+            withdrawal={withdrawal}
+            isLast={index === displayedItems.length - 1}
+          />
         ))}
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -120,23 +112,6 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.borderLight,
-  },
-  withdrawalItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderLight,
-  },
-  withdrawalInfo: {
-    flex: 1,
-  },
-  amountContainer: {
-    backgroundColor: theme.colors.background,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
   },
   stateContainer: {
     height: 150,

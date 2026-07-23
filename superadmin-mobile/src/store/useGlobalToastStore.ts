@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ToastType } from '../components/ui/Toast';
+import { ToastType } from '../components/common/ui/Toast';
 
 interface ToastState {
   visible: boolean;

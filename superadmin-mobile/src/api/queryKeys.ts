@@ -3,6 +3,10 @@ export const queryKeys = {
     dashboard: ['super-admin', 'dashboard'] as const,
     activity: ['super-admin', 'activity'] as const,
     pendingWithdrawals: ['super-admin', 'pending-withdrawals'] as const,
+    workers: (filters: Record<string, any>) => ['super-admin', 'workers', filters] as const,
+    workerDetail: (id: string) => ['super-admin', 'worker', id] as const,
+    qrBatches: (filters: Record<string, any>) => ['super-admin', 'qr-batches', filters] as const,
+    qrScans: (filters: Record<string, any>) => ['super-admin', 'qr-scans', filters] as const,
   },
   dashboard: {
     stats: ['dashboard', 'stats'] as const,

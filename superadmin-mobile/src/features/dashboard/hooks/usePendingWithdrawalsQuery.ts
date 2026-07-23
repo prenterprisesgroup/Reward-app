@@ -12,7 +12,7 @@ export const usePendingWithdrawalsQuery = () => {
     queryKey: queryKeys.superAdmin.pendingWithdrawals,
     queryFn: async ({ signal }) => {
       try {
-        const rawData = await dashboardApi.getPendingWithdrawals(signal);
+        const rawData = await dashboardApi.getPendingWithdrawals(1, 6, signal);
         return dashboardMapper.toPendingWithdrawals(rawData);
       } catch (error) {
         if (!axios.isCancel(error)) {

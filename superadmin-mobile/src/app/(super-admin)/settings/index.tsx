@@ -5,6 +5,7 @@ import { theme } from '../../../constants/theme';
 import { usePlatformSettingsQuery } from '../../../features/settings/hooks/useSettings';
 import { SettingsForm } from '../../../features/settings/components/SettingsForm';
 import { router, useNavigation } from 'expo-router';
+import { ScreenHeader } from '../../../components/common/ScreenHeader';
 
 export default function SettingsScreen() {
   const { data, isLoading, isError, refetch, isRefetching } = usePlatformSettingsQuery();
@@ -67,10 +68,8 @@ export default function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['right', 'left']}>
-      <View style={styles.header}>
-        <Text style={styles.screenTitle}>Platform Settings</Text>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <ScreenHeader title="Settings" subtitle="System preferences" />
 
       <ScrollView 
         style={styles.scrollView}
@@ -107,17 +106,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: theme.spacing.xl,
   },
-  header: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  screenTitle: {
-    ...theme.typography.h2,
-    color: theme.colors.text,
-  },
   scrollView: {
     flex: 1,
   },
@@ -126,7 +114,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100, // Space for Bottom Navigation if needed
   },
   errorText: {
-    ...theme.typography.h4,
+    ...theme.typography.h3,
     color: theme.colors.error,
   }
 });

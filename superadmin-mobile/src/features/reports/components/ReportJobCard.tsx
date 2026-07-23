@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    ...theme.typography.h4,
+    ...theme.typography.h3,
     color: theme.colors.text,
   },
   statusBadge: {
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 4,
-    borderRadius: theme.borderRadius.full,
+    borderRadius: theme.borderRadius.pill,
     gap: 4,
   },
   statusText: {
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   downloadText: {
-    ...theme.typography.button,
+    ...theme.typography.body,
     color: '#fff',
   }
 });

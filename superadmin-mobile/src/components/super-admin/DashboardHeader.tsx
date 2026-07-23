@@ -1,59 +1,91 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Typography } from '../common/Typography';
 import { theme } from '../../constants/theme';
 import { Feather } from '@expo/vector-icons';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ToastAndroid, Platform, Alert } from 'react-native';
+import { ToastAndroid, Platform, Alert, AppState, AppStateStatus } from 'react-native';
 
-export function DashboardHeader() {
+import { useAuthStore } from '../../store/useAuthStore';
+import { useRouter } from 'expo-router';
+
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good Morning ☀️';
+  if (hour < 18) return 'Good Afternoon 🌤️';
+  return 'Good Evening 🌙';
+};
+
+export const DashboardHeader = React.memo(function DashboardHeader() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const unreadCount = 0; // Coming soon
+  const user = useAuthStore(state => state.user);
+
+  const [greeting, setGreeting] = React.useState(() => getGreeting());
+  
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active') {
+        setGreeting(getGreeting());
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  const firstName = user?.name ? user.name.split(' ')[0] : 'Admin';
+
+  // Stabilized: prevents new function reference on every render
+  const handleNotificationsPress = useCallback(() => {
+    router.push('/(super-admin)/inbox');
+  }, [router]);
+
+  const handleProfilePress = useCallback(() => {
+    router.push('/(super-admin)/profile');
+  }, [router]);
 
   return (
-    <Animated.View 
+    <Animated.View
       entering={FadeInUp.delay(100).duration(400)}
       style={[styles.container, { paddingTop: Math.max(insets.top, 16) }]}
     >
       <View style={styles.textContainer}>
-        <Typography style={styles.greeting} weight="semiBold">Good Morning 👋</Typography>
-        <Typography style={styles.title} variant="title">Super Admin</Typography>
-        <Typography style={styles.subtitle} variant="body">Platform Overview</Typography>
+        <Typography style={styles.greeting} weight="semiBold">{greeting}</Typography>
+        <Typography style={styles.title} variant="title">{firstName}</Typography>
+        <Typography style={styles.subtitle} variant="body">Welcome back! Today's overview is ready.</Typography>
       </View>
-      
+
       <View style={styles.actionsContainer}>
-        <TouchableOpacity 
-          style={styles.iconButton} 
-          accessibilityRole="button" 
+        <TouchableOpacity
+          style={styles.iconButton}
+          accessibilityRole="button"
           accessibilityLabel="Notifications"
-          onPress={() => {
-            if (Platform.OS === 'android') ToastAndroid.show('Notifications coming soon', ToastAndroid.SHORT);
-            else Alert.alert('Coming Soon', 'Notifications coming soon');
-          }}
+          onPress={handleNotificationsPress}
         >
           <Feather name="bell" size={20} color={theme.colors.textPrimary} />
           {/* Notification Dot */}
-          <View style={styles.notificationDot} />
+          {unreadCount > 0 && <View style={styles.notificationDot} />}
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.avatarContainer} 
-          accessibilityRole="button" 
+
+        <TouchableOpacity
+          style={styles.avatarContainer}
+          accessibilityRole="button"
           accessibilityLabel="Profile"
-          onPress={() => {
-            if (Platform.OS === 'android') ToastAndroid.show('Profile settings coming soon', ToastAndroid.SHORT);
-            else Alert.alert('Coming Soon', 'Profile settings coming soon');
-          }}
+          onPress={handleProfilePress}
         >
-          <Image 
-            source={{ uri: 'https://i.pravatar.cc/150?u=superadmin' }} 
-            style={styles.avatar} 
+          <Image
+            source={{ uri: user?.profilePhotoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Super Admin')}&background=0D8ABC&color=fff&size=150` }}
+            style={styles.avatar}
           />
         </TouchableOpacity>
       </View>
     </Animated.View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

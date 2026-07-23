@@ -1,35 +1,56 @@
-import React from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useCallback, useMemo } from 'react';
+import { View, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, ToastAndroid } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { theme } from '../../../constants/theme';
-import { CompanyScreenHeader } from '../../../features/companies/components/CompanyScreenHeader';
-import { CompanySearchBar } from '../../../features/companies/components/CompanySearchBar';
+import { ScreenHeader } from '../../../components/common/ScreenHeader';
+import { AppSearchBar } from '../../../components/common/list/AppSearchBar';
 import { CompanyFilterPills } from '../../../features/companies/components/CompanyFilterPills';
 import { CompanyStatsRow } from '../../../features/companies/components/CompanyStatsRow';
 import { CompanyCard } from '../../../features/companies/components/CompanyCard';
 import { Typography } from '../../../components/common/Typography';
+import { Skeleton } from '../../../components/common/ui/Skeleton';
+import { EmptyState } from '../../../components/common/ui/EmptyState';
 import { Feather } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCompaniesQuery } from '../../../features/companies/hooks/useCompanies';
+import { 
+  useCompaniesQuery, 
+  useApproveCompanyMutation, 
+  useSuspendCompanyMutation 
+} from '../../../features/companies/hooks/useCompanies';
 import { queryKeys } from '../../../features/companies/hooks/queryKeys';
 import { companiesApi } from '../../../features/companies/api/companies.api';
 
+interface CompaniesListHeaderProps {
+  totalCompanies: number;
+  activeFilter: string;
+  setActiveFilter: (filter: string) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+}
 
+const CompaniesListHeader = React.memo(({ totalCompanies, activeFilter, setActiveFilter, searchQuery, setSearchQuery }: CompaniesListHeaderProps) => {
+  return (
+    <View style={{ paddingBottom: 16 }}>
+      <ScreenHeader title="Companies" subtitle={`${totalCompanies} Registered Companies`} showSearch />
+      <View style={{ paddingHorizontal: 16 }}>
+        <AppSearchBar 
+          placeholder="Search company name, ID or industry..."
+          onSearch={setSearchQuery} 
+          initialValue={searchQuery}
+        />
+      </View>
+      <CompanyFilterPills activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+      <CompanyStatsRow />
+    </View>
+  );
+});
 
 export default function CompaniesScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [activeFilter, setActiveFilter] = React.useState('all');
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [debouncedSearch, setDebouncedSearch] = React.useState('');
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
 
   const {
     data,
@@ -42,42 +63,68 @@ export default function CompaniesScreen() {
     isRefetching
   } = useCompaniesQuery({
     status: activeFilter === 'all' ? undefined : activeFilter.toUpperCase(),
-    search: debouncedSearch || undefined,
+    search: searchQuery || undefined,
   });
 
-  const handleViewCompany = (id: string) => {
+  const approveMutation = useApproveCompanyMutation();
+  const suspendMutation = useSuspendCompanyMutation();
+
+  const handleAction = useCallback((id: string, currentStatus: string) => {
+    if (currentStatus === 'ACTIVE') {
+      Alert.alert('Suspend Company', 'Are you sure you want to suspend this company?', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Suspend', style: 'destructive', onPress: () => suspendMutation.mutate(id) }
+      ]);
+    } else if (currentStatus === 'PENDING' || currentStatus === 'SUSPENDED') {
+      Alert.alert('Activate Company', 'Are you sure you want to activate this company?', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Activate', onPress: () => approveMutation.mutate(id) }
+      ]);
+    }
+  }, [approveMutation, suspendMutation]);
+
+  // Stabilized: prefetch + navigate called from FlatList row — needs stable reference
+  const handleViewCompany = useCallback((id: string) => {
     // Prefetch before navigating
     queryClient.prefetchQuery({
       queryKey: queryKeys.superAdmin.companies.detail(id),
       queryFn: ({ signal }) => companiesApi.getCompanyDetails(id, signal)
     });
-    queryClient.prefetchQuery({
+    queryClient.prefetchInfiniteQuery({
       queryKey: queryKeys.superAdmin.companies.activity(id),
-      queryFn: ({ signal }) => companiesApi.getCompanyActivity(id, { page: 1, limit: 10 }, signal)
+      queryFn: ({ signal }) => companiesApi.getCompanyActivity(id, { page: 1, limit: 10 }, signal),
+      initialPageParam: 1
     });
     router.push(`/(super-admin)/companies/${id}`);
-  };
+  }, [queryClient, router]);
 
-  const renderHeader = () => {
-    const totalCompanies = data?.pages[0]?.pagination.totalItems || 0;
-    return (
-      <>
-        <CompanyScreenHeader totalCompanies={totalCompanies} />
-        <CompanySearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-        <CompanyFilterPills activeFilter={activeFilter} onFilterChange={setActiveFilter} />
-        <CompanyStatsRow />
-      </>
-    );
-  };
+  // We moved the header to a separate component (CompaniesListHeader) to prevent
+  // it from unmounting when searchQuery or activeFilter changes, preserving search state!
 
-  const companies = data?.pages.flatMap(page => page.data) || [];
+  // Stabilized: onEndReached passed to FlatList — inline function recreated every render
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage) fetchNextPage();
+  }, [hasNextPage, fetchNextPage]);
+
+  const companies = useMemo(
+    () => data?.pages.flatMap(page => page.data) || [],
+    [data]
+  );
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <FlatList
         data={companies}
         keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderHeader}
+        ListHeaderComponent={
+          <CompaniesListHeader
+            totalCompanies={data?.pages[0]?.pagination.totalItems || 0}
+            activeFilter={activeFilter}
+            setActiveFilter={setActiveFilter}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
+        }
         renderItem={({ item }) => (
           <CompanyCard
             id={item.id}
@@ -90,19 +137,32 @@ export default function CompaniesScreen() {
             rewardsDistributed={`₹${(item.rewardsDistributed / 100000).toFixed(2)} L`}
             status={item.status}
             onView={() => handleViewCompany(item.id)}
+            onEdit={() => {
+              router.push(`/companies/${item.id}/edit`);
+            }}
+            onAction={() => handleAction(item.id, item.status)}
           />
         )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        onEndReached={() => {
-          if (hasNextPage) fetchNextPage();
-        }}
+        onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
         refreshing={isRefetching}
         onRefresh={refetch}
         ListEmptyComponent={
-          isLoading ? <Typography style={{textAlign: 'center', marginTop: 20}}>Loading...</Typography> : 
-          <Typography style={{textAlign: 'center', marginTop: 20}}>No companies found</Typography>
+          isLoading ? (
+            <View style={{ paddingHorizontal: 16, marginTop: 16, gap: 16 }}>
+              <Skeleton height={140} borderRadius={16} />
+              <Skeleton height={140} borderRadius={16} />
+              <Skeleton height={140} borderRadius={16} />
+            </View>
+          ) : (
+            <EmptyState 
+              icon="briefcase"
+              title="No companies found"
+              message="There are no companies matching your search or filter criteria."
+            />
+          )
         }
         ListFooterComponent={
           isFetchingNextPage ? <Typography style={{textAlign: 'center', marginVertical: 20}}>Loading more...</Typography> : null

@@ -12,6 +12,10 @@ export const ENDPOINTS = {
     WALLET_UPI: '/api/v1/system/wallet/upi',
     BARCODE_SCAN: '/api/v1/system/scan',
     WITHDRAW: '/api/v1/system/withdrawals',
+    NOTIFICATIONS: '/api/v1/notifications',
+    NOTIFICATIONS_READ_ALL: '/api/v1/notifications/read-all',
+    NOTIFICATIONS_READ: (id: string) => `/api/v1/notifications/${id}/read`,
+    NOTIFICATIONS_DELETE: (id: string) => `/api/v1/notifications/${id}`,
   },
   ADMIN: {
     DASHBOARD_STATS: '/api/v1/system/dashboard/stats',
@@ -46,5 +50,7 @@ export const ENDPOINTS = {
     CREATE_COMPANY_ADMIN: (companyId: string) => `/api/v1/admin/companies/${companyId}/admins`,
     LIST_USERS: '/api/v1/admin-users/users',
     USER: (id: string) => `/api/v1/admin-users/users/${id}`,
+    QR_BATCHES: '/api/v1/admin/qr-batches',
+    QR_SCANS: '/api/v1/admin/qr-scans',
   },
 } as const;

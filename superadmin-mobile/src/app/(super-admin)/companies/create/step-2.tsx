@@ -44,7 +44,7 @@ export default function Step2Address() {
               onChangeText={onChange}
               accessibilityLabel="Address Line"
               accessibilityHint="Required. Enter the street address."
-              accessibilityState={{ invalid: !!error }}
+              
             />
             {error && <Typography style={styles.errorText} accessibilityLiveRegion="polite">{error.message}</Typography>}
           </View>

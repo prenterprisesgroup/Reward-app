@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: 2,
-    borderRadius: theme.borderRadius.full,
+    borderRadius: theme.radius.pill,
   },
   badgeSuccess: {
     backgroundColor: theme.colors.success + '20',

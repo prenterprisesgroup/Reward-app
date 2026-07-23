@@ -6,7 +6,7 @@ export const CompanyFormDataMapper = {
 
     // Map basic text fields
     formData.append('name', values.name);
-    formData.append('legalName', values.legalName || values.name);
+    formData.append('legalName', values.name);
     const validIndustries = ["Construction", "Manufacturing", "Retail", "IT", "Healthcare", "Education", "Other"];
     const inputIndustry = String(values.industry || '').trim();
     const matchedIndustry = validIndustries.find(i => i.toLowerCase() === inputIndustry.toLowerCase());
@@ -23,7 +23,7 @@ export const CompanyFormDataMapper = {
     // Map nested address object
     const address = {
       line1: values.addressLine,
-      line2: values.addressLine2 || '',
+      line2: '',
       city: values.city,
       state: values.state,
       pincode: values.pincode,

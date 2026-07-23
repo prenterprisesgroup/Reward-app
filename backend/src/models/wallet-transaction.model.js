@@ -66,6 +66,7 @@ const walletTransactionSchema = new mongoose.Schema(
 
 walletTransactionSchema.index({ worker: 1, createdAt: -1 });
 walletTransactionSchema.index({ company: 1, createdAt: -1 });
+walletTransactionSchema.index({ company: 1, type: 1, status: 1 }); // Added for company worker association
 walletTransactionSchema.index({ type: 1, status: 1, createdAt: -1 }); // Added for global analytics
 
 module.exports = mongoose.model("WalletTransaction", walletTransactionSchema);

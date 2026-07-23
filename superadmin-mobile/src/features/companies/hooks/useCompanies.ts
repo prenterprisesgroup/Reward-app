@@ -38,6 +38,16 @@ export const useCompaniesQuery = (params: GetCompaniesParams) => {
   });
 };
 
+export const useCompanyStatsQuery = () => {
+  return useQuery({
+    queryKey: queryKeys.superAdmin.companies.globalStats(),
+    queryFn: async ({ signal }) => {
+      return companiesApi.getCompanyStats(signal);
+    },
+    staleTime: 2 * 60 * 1000,
+  });
+};
+
 export const useCompanyDetailsQuery = (id: string) => {
   return useQuery({
     queryKey: queryKeys.superAdmin.companies.detail(id),
@@ -131,7 +141,7 @@ export const useCreateCompanyMutation = () => {
     mutationFn: (data: FormData) => companiesApi.createCompany(data),
     onSuccess: () => {
       // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.companies.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.companies.list({}) });
       queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.dashboard });
       queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.companies.activity('global') }); // if global activity exists
     },
@@ -165,4 +175,37 @@ export const useRejectCompanyMutation = () => {
 
 export const useSuspendCompanyMutation = () => {
   return useOptimisticMutation(companiesApi.suspendCompany, 'Company suspended successfully', 'SUSPENDED');
+};
+
+export const useUpdateCompanyMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string, data: any }) => companiesApi.updateCompany(id, data),
+    onSuccess: (_, { id }) => {
+      showToast('Company updated successfully');
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.companies.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.companies.detail(id) });
+    },
+    onError: (error: any) => {
+      const errorMsg = error?.response?.data?.message || error.message || 'Failed to update company.';
+      showToast(errorMsg);
+    }
+  });
+};
+
+export const useCompanyWorkersQuery = (id: string, params: GetCompaniesParams) => {
+  return useInfiniteQuery({
+    queryKey: queryKeys.superAdmin.companies.workers(id, params),
+    initialPageParam: 1,
+    queryFn: async ({ pageParam = 1, signal }) => {
+      const response = await companiesApi.getCompanyWorkers(id, { ...params, page: pageParam }, signal);
+      return response;
+    },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.pagination.hasNextPage) {
+        return lastPage.pagination.page + 1;
+      }
+      return undefined;
+    },
+  });
 };

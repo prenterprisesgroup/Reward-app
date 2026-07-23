@@ -3,7 +3,8 @@ import {
   BackendListResponse, 
   BackendCompanyListResponseItem,
   BackendCompanyDetailsResponse,
-  BackendActivity
+  BackendActivity,
+  BackendCompanyWorker
 } from '../types/company.types';
 
 export interface GetCompaniesParams {
@@ -14,6 +15,13 @@ export interface GetCompaniesParams {
   sort?: string;
 }
 
+export interface CompanyStats {
+  total: number;
+  active: number;
+  pending: number;
+  suspended: number;
+}
+
 export const companiesApi = {
   createCompany: async (data: FormData, signal?: AbortSignal) => {
     const response = await apiClient.post('/api/v1/admin/companies', data, {
@@ -21,6 +29,13 @@ export const companiesApi = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+    });
+    return response.data;
+  },
+
+  getCompanyStats: async (signal?: AbortSignal) => {
+    const response = await apiClient.get<CompanyStats>('/api/v1/admin/companies/stats', {
+      signal
     });
     return response.data;
   },
@@ -48,18 +63,40 @@ export const companiesApi = {
     return response.data;
   },
 
+  getCompanyWorkers: async (id: string, params: GetCompaniesParams, signal?: AbortSignal) => {
+    const response = await apiClient.get<BackendListResponse<BackendCompanyWorker>>(`/api/v1/admin/companies/${id}/workers`, {
+      params,
+      signal
+    });
+    return response.data;
+  },
+
   approveCompany: async (id: string) => {
-    const response = await apiClient.post(`/api/v1/admin/companies/${id}/approve`);
+    const response = await apiClient.post(`/api/v1/admin/companies/${id}/approve`, {});
+    return response.data;
+  },
+
+  createCompanyAdmin: async (companyId: string, data: any) => {
+    const response = await apiClient.post(`/api/v1/admin/companies/${companyId}/admins`, data);
+    return response.data;
+  },
+
+  updateCompany: async (id: string, data: any) => {
+    const response = await apiClient.put(`/api/v1/admin/companies/${id}`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 
   rejectCompany: async (id: string) => {
-    const response = await apiClient.post(`/api/v1/admin/companies/${id}/reject`);
+    const response = await apiClient.post(`/api/v1/admin/companies/${id}/reject`, {});
     return response.data;
   },
 
   suspendCompany: async (id: string) => {
-    const response = await apiClient.post(`/api/v1/admin/companies/${id}/suspend`);
+    const response = await apiClient.post(`/api/v1/admin/companies/${id}/suspend`, {});
     return response.data;
   }
 };

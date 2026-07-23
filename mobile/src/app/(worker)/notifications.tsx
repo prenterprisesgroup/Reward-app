@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Typography } from '../../components/common/Typography';
@@ -6,14 +6,14 @@ import { ArrowLeft, CheckCircle2 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { theme } from '../../constants/theme';
 import { WorkerBottomNavigation } from '../../components/navigation/worker/WorkerBottomNavigation';
-import { NotificationCard } from '../../components/cards/NotificationCard';
+import { NotificationCard } from '../../../../shared/notifications/components/NotificationCard';
 import { 
   useNotificationsInfiniteQuery, 
   useMarkNotificationReadMutation, 
   useMarkAllReadMutation, 
   useDeleteNotificationMutation,
   InAppNotification
-} from '../../hooks/useNotifications';
+} from '../../../../shared/notifications/hooks/useNotifications';
 
 export default function NotificationsScreen() {
   const router = useRouter();
@@ -36,7 +36,7 @@ export default function NotificationsScreen() {
   const notifications = data?.pages.flatMap(page => page.data) || [];
   const unreadCount = data?.pages[0]?.meta?.unreadCount || 0;
 
-  const handlePress = (notification: InAppNotification) => {
+  const handlePress = useCallback((notification: InAppNotification) => {
     if (!notification.isRead) {
       markReadMutation.mutate(notification._id);
     }
@@ -53,7 +53,25 @@ export default function NotificationsScreen() {
         router.push('/(worker)/profile');
         break;
     }
-  };
+  }, [markReadMutation, router]);
+
+  const handleMarkRead = useCallback((id: string) => {
+    markReadMutation.mutate(id);
+  }, [markReadMutation]);
+
+  const handleDelete = useCallback((id: string) => {
+    deleteMutation.mutate(id);
+  }, [deleteMutation]);
+
+  const notificationColors = useMemo(() => ({
+    primary: theme.colors.primary,
+    success: theme.colors.success,
+    error: theme.colors.error,
+    surface: '#FFFFFF',
+    surfaceHighlight: '#F8F8F6',
+    text: theme.colors.textPrimary,
+    textSecondary: theme.colors.textSecondary,
+  }), []);
 
   const renderEmpty = () => {
     if (isLoading) return null;
@@ -105,9 +123,10 @@ export default function NotificationsScreen() {
         renderItem={({ item }) => (
           <NotificationCard 
             notification={item} 
+            colors={notificationColors}
             onPress={handlePress}
-            onMarkRead={(id) => markReadMutation.mutate(id)}
-            onDelete={(id) => deleteMutation.mutate(id)}
+            onMarkRead={handleMarkRead}
+            onDelete={handleDelete}
           />
         )}
         contentContainerStyle={styles.listContent}

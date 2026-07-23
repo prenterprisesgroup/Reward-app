@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xl,
     padding: theme.spacing.lg,
     backgroundColor: theme.colors.errorBackground,
-    borderRadius: theme.radius.full,
+    borderRadius: theme.radius.pill,
   },
   title: {
     fontSize: 24,

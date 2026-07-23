@@ -5,6 +5,7 @@ const { ROLES } = require("../constants/roles");
 const { COMPANY_STATUS } = require("../constants/statuses");
 const Company = require("../models/company.model");
 const User = require("../models/user.model");
+const WalletTransaction = require("../models/wallet-transaction.model");
 const presentCompany = require("../utils/company-presenter");
 const HttpError = require("../utils/http-error");
 const presentUser = require("../utils/user-presenter");
@@ -111,6 +112,40 @@ async function createCompany(req, res, next) {
   }
 }
 
+async function getCompanyStats(req, res, next) {
+  try {
+    const stats = await Company.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    let total = 0;
+    let active = 0;
+    let pending = 0;
+    let suspended = 0;
+
+    stats.forEach(s => {
+      total += s.count;
+      if (s._id === 'ACTIVE') active += s.count;
+      if (s._id === 'PENDING') pending += s.count;
+      if (s._id === 'SUSPENDED') suspended += s.count;
+    });
+
+    res.json({
+      total,
+      active,
+      pending,
+      suspended
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function listCompanies(req, res, next) {
   try {
     const { status, search, page = 1, limit = 10, sort = "-createdAt" } = req.query;
@@ -163,10 +198,14 @@ async function listCompanies(req, res, next) {
       // Lookup Workers count
       {
         $lookup: {
-          from: "users",
+          from: "wallettransactions",
           let: { companyId: "$_id" },
           pipeline: [
-            { $match: { $expr: { $and: [{ $eq: ["$company", "$$companyId"] }, { $eq: ["$role", ROLES.WORKER] }, { $ne: ["$isDeleted", true] }] } } },
+            { $match: { $expr: { $and: [{ $eq: ["$company", "$$companyId"] }, { $eq: ["$type", "REWARD"] }, { $eq: ["$status", "SUCCESS"] }] } } },
+            { $group: { _id: "$worker" } },
+            { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "w" } },
+            { $unwind: "$w" },
+            { $match: { "w.isDeleted": { $ne: true } } },
             { $count: "count" }
           ],
           as: "workersData"
@@ -283,15 +322,19 @@ async function getCompany(req, res, next) {
       // Workers Stats
       {
         $lookup: {
-          from: "users",
+          from: "wallettransactions",
           let: { companyId: "$_id" },
           pipeline: [
-            { $match: { $expr: { $and: [{ $eq: ["$company", "$$companyId"] }, { $eq: ["$role", ROLES.WORKER] }, { $ne: ["$isDeleted", true] }] } } },
+            { $match: { $expr: { $and: [{ $eq: ["$company", "$$companyId"] }, { $eq: ["$type", "REWARD"] }, { $eq: ["$status", "SUCCESS"] }] } } },
+            { $group: { _id: "$worker" } },
+            { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "w" } },
+            { $unwind: "$w" },
+            { $match: { "w.isDeleted": { $ne: true } } },
             { 
               $group: { 
                 _id: null, 
                 total: { $sum: 1 },
-                active: { $sum: { $cond: [{ $eq: ["$isActive", true] }, 1, 0] } }
+                active: { $sum: { $cond: [{ $eq: ["$w.isActive", true] }, 1, 0] } }
               } 
             }
           ],
@@ -504,8 +547,8 @@ async function approveCompany(req, res, next) {
       throw new HttpError(404, "Company not found");
     }
 
-    if (company.status !== COMPANY_STATUS.PENDING) {
-      throw new HttpError(400, "Company is not in pending status");
+    if (company.status === COMPANY_STATUS.ACTIVE) {
+      throw new HttpError(400, "Company is already active");
     }
 
     company.status = COMPANY_STATUS.ACTIVE;
@@ -612,8 +655,8 @@ async function getCompanyActivity(req, res, next) {
 
       return {
         id: act._id,
-        type: act.action, // e.g., 'QR_BATCH_GENERATED'
-        title: act.action.replace(/_/g, ' '),
+        type: act.action || 'UNKNOWN',
+        title: (act.action || 'UNKNOWN').replace(/_/g, ' '),
         description: description,
         createdAt: act.createdAt,
         performedBy: act.performedBy ? {
@@ -641,13 +684,202 @@ async function getCompanyActivity(req, res, next) {
   }
 }
 
+
+async function updateCompany(req, res, next) {
+  try {
+    const { id } = req.params;
+    assertObjectId(id, 'Company id');
+
+    const { name, legalName, phone, email, address, industry, website, gstNumber, upiId, bankAccount } = req.body;
+
+    const company = await Company.findById(id);
+    if (!company) {
+      throw new HttpError(404, 'Company not found');
+    }
+
+    if (name || email) {
+      const normalizedEmail = email ? email.toLowerCase() : company.email;
+      const duplicateCompany = await Company.findOne({
+        _id: { $ne: company._id },
+        $or: [
+          ...(name ? [{ name: new RegExp('^' + escapeRegex(name) + '$', 'i') }] : []),
+          ...(normalizedEmail ? [{ email: normalizedEmail }] : []),
+        ],
+      });
+
+      if (duplicateCompany) {
+        throw new HttpError(409, 'Company with this name or email already exists');
+      }
+    }
+
+    if (name) company.name = name;
+    if (legalName !== undefined) company.legalName = legalName;
+    if (phone !== undefined) company.phone = phone;
+    if (email !== undefined) company.email = email.toLowerCase();
+    if (industry !== undefined) company.industry = industry;
+    if (website !== undefined) company.website = website;
+    if (gstNumber !== undefined) company.gstNumber = gstNumber;
+    if (upiId !== undefined) company.upiId = upiId;
+    
+    if (address) {
+      let parsedAddress = address;
+      if (typeof address === 'string') {
+        try { parsedAddress = JSON.parse(address); } catch (e) {}
+      }
+      company.address = { ...company.address, ...parsedAddress };
+    }
+    
+    if (bankAccount) {
+      let parsedBankAccount = bankAccount;
+      if (typeof bankAccount === 'string') {
+        try { parsedBankAccount = JSON.parse(bankAccount); } catch (e) {}
+      }
+      company.bankAccount = { ...company.bankAccount, ...parsedBankAccount };
+    }
+
+    let uploadedImage = null;
+    if (req.file) {
+      uploadedImage = await uploadToCloudinary(req.file, 'reward-app/company-logos');
+      company.logo = uploadedImage.secure_url;
+      company.cloudinaryPublicId = uploadedImage.public_id;
+    }
+
+    await company.save();
+
+    res.json({
+      company: presentCompany(company),
+      message: 'Company updated successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getCompanyWorkers(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { search, page = 1, limit = 10, sort = "-totalRewardsEarned" } = req.query;
+    assertObjectId(id, "Company id");
+
+    const companyId = new mongoose.Types.ObjectId(id);
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 10);
+    const skipNum = (pageNum - 1) * limitNum;
+
+    // Build sort options
+    let sortOption = { totalRewardsEarned: -1 };
+    if (sort === "totalRewardsEarned") sortOption = { totalRewardsEarned: 1 };
+    if (sort === "-totalRewardsEarned") sortOption = { totalRewardsEarned: -1 };
+    if (sort === "totalQrScans") sortOption = { totalQrScans: 1 };
+    if (sort === "-totalQrScans") sortOption = { totalQrScans: -1 };
+    if (sort === "lastScanDate") sortOption = { lastScanDate: 1 };
+    if (sort === "-lastScanDate") sortOption = { lastScanDate: -1 };
+
+    // Common match for the company
+    const baseMatch = { company: companyId, type: 'REWARD', status: 'SUCCESS' };
+
+    // Get the base aggregation grouping by worker
+    const basePipeline = [
+      { $match: baseMatch },
+      {
+        $group: {
+          _id: "$worker",
+          totalRewardsEarned: { $sum: "$amount" },
+          totalQrScans: { $sum: 1 },
+          lastScanDate: { $max: "$createdAt" },
+          joinDate: { $min: "$createdAt" },
+          // Store the last known amount for reference
+          lastRewardAmount: { $last: "$amount" }
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "workerDetails"
+        }
+      },
+      { $unwind: "$workerDetails" },
+      { $match: { "workerDetails.isDeleted": { $ne: true } } }
+    ];
+
+    // Apply search filter if provided
+    if (search && search.trim() !== '') {
+      const searchRegex = new RegExp(escapeRegex(search.trim()), 'i');
+      basePipeline.push({
+        $match: {
+          $or: [
+            { "workerDetails.name": searchRegex },
+            { "workerDetails.phone": searchRegex }
+          ]
+        }
+      });
+    }
+
+    // Facet for pagination & counting
+    const facetPipeline = [
+      ...basePipeline,
+      {
+        $facet: {
+          data: [
+            { $sort: sortOption },
+            { $skip: skipNum },
+            { $limit: limitNum },
+            {
+              $project: {
+                id: "$_id",
+                name: { $ifNull: ["$workerDetails.name", "Unknown"] },
+                phone: { $ifNull: ["$workerDetails.phone", "N/A"] },
+                status: { $ifNull: ["$workerDetails.isActive", true] },
+                profilePhotoUrl: { $ifNull: ["$workerDetails.profilePhotoUrl", null] },
+                totalRewardsEarned: 1,
+                totalQrScans: 1,
+                lastScanDate: 1,
+                joinDate: 1,
+                lastRewardAmount: 1,
+                _id: 0
+              }
+            }
+          ],
+          totalCount: [
+            { $count: "count" }
+          ]
+        }
+      }
+    ];
+
+    const result = await WalletTransaction.aggregate(facetPipeline);
+    const data = result[0]?.data || [];
+    const totalItems = result[0]?.totalCount[0]?.count || 0;
+    const totalPages = Math.ceil(totalItems / limitNum);
+
+    res.json({
+      data,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        totalItems,
+        totalPages,
+        hasNextPage: pageNum < totalPages,
+        hasPreviousPage: pageNum > 1
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
+  updateCompany,
   createCompany,
   createCompanyAdmin,
+  getCompanyStats,
   getCompany,
   listCompanies,
   approveCompany,
   rejectCompany,
   suspendCompany,
   getCompanyActivity,
+  getCompanyWorkers,
 };

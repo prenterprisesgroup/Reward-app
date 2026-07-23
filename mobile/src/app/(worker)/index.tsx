@@ -7,12 +7,14 @@ import { useRouter } from 'expo-router';
 import { WorkerBottomNavigation } from '../../components/navigation/worker/WorkerBottomNavigation';
 import { WorkerHeader } from '../../components/layout/WorkerHeader';
 import { useUserQuery, useWalletQuery } from '../../hooks/useWalletQuery';
+import { useNotificationContext } from '../../../../shared/notifications/providers/NotificationProvider';
 import { ActivityIndicator, RefreshControl } from 'react-native';
 import { WalletData, RewardTransaction, PendingWithdrawal } from '../../types/backend.types';
 import React from 'react';
 
 export default function WorkerHomeScreen() {
   const router = useRouter();
+  const { unreadCount } = useNotificationContext();
   const insets = useSafeAreaInsets();
   const bottomSpacing = Math.max(insets.bottom + 12, 24);
 
@@ -128,7 +130,7 @@ export default function WorkerHomeScreen() {
           user={user} 
           isLoading={isUserLoading} 
           isError={isUserError} 
-          unreadCount={0} 
+          unreadCount={unreadCount} 
         />
 
         {/* Balance Card */}

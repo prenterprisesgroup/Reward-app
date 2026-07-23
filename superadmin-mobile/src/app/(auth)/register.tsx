@@ -23,7 +23,7 @@ export default function RegisterScreen() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { control, handleSubmit, formState: { errors } } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerSchema) as any,
     defaultValues: { name: '', phone: '', email: '', password: '', confirmPassword: '', upiId: '' },
   });
 

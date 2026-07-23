@@ -7,6 +7,7 @@ const BarcodeBatch = require("../models/barcode-batch.model");
 const Barcode = require("../models/barcode.model");
 const AnalyticsPeriodUtil = require("../utils/analytics-period.util");
 const HealthService = require("./health.service");
+const { WALLET_TRANSACTION_STATUS, REWARD_TRANSACTION_TYPES } = require("../constants/statuses");
 
 class AnalyticsService {
   
@@ -47,16 +48,34 @@ class AnalyticsService {
   }
 
   static async getStats(period) {
-    // This is essentially just current snapshot data for the dashboard grids,
-    // which aligns with the "current" values from getGrowth.
-    // For efficiency we'll just extract current from getGrowth or run dedicated lightweight queries if needed.
-    // But since getGrowth provides everything, we'll map it in the controller.
-    const growth = await this.getGrowth(period);
+    // Using global exact counts from the respective collections
+    const [
+      totalCompanies,
+      activeWorkers,
+      rewardStats,
+      totalQRsGenerated,
+      totalQRsRedeemed,
+      pendingWithdrawals
+    ] = await Promise.all([
+      Company.countDocuments({ status: "ACTIVE" }),
+      User.countDocuments({ role: 'WORKER', isDeleted: { $ne: true } }),
+      WalletTransaction.aggregate([
+        { $match: { type: { $in: REWARD_TRANSACTION_TYPES }, status: WALLET_TRANSACTION_STATUS.SUCCESS } },
+        { $group: { _id: null, total: { $sum: '$amount' } } }
+      ]),
+      BarcodeBatch.countDocuments(),
+      Barcode.countDocuments({ status: "REDEEMED" }),
+      WithdrawalRequest.countDocuments({ status: 'PENDING' })
+    ]);
+
     return {
-      totalCompanies: growth.companies.current,
-      totalWorkers: growth.workers.current,
-      rewardsDistributed: growth.rewards.current,
-      qrCodesGenerated: growth.batches.current
+      totalCompanies,
+      totalWorkers: activeWorkers,
+      qrCodesGenerated: totalQRsGenerated,
+      qrCodesRedeemed: totalQRsRedeemed,
+      pendingWithdrawals,
+      rewardsDistributed: rewardStats[0]?.total || 0,
+      growth: await this.getGrowth(period)
     };
   }
 
@@ -66,7 +85,7 @@ class AnalyticsService {
     const [companies, workers, rewards, batches] = await Promise.all([
       this._calculateGrowth(Company, "createdAt", dates, { status: "ACTIVE" }),
       this._calculateGrowth(User, "createdAt", dates, { role: "WORKER", isDeleted: { $ne: true } }),
-      this._calculateGrowth(WalletTransaction, "createdAt", dates, { type: "REWARD", status: "COMPLETED" }, "$amount"),
+      this._calculateGrowth(WalletTransaction, "createdAt", dates, { type: { $in: REWARD_TRANSACTION_TYPES }, status: WALLET_TRANSACTION_STATUS.SUCCESS }, "$amount"),
       this._calculateGrowth(BarcodeBatch, "createdAt", dates, {}),
     ]);
 
@@ -92,8 +111,8 @@ class AnalyticsService {
       {
         $match: {
           createdAt: { $gte: startDate, $lte: endDate },
-          type: "REWARD",
-          status: "COMPLETED"
+          type: { $in: REWARD_TRANSACTION_TYPES },
+          status: WALLET_TRANSACTION_STATUS.SUCCESS
         }
       },
       {
@@ -177,7 +196,7 @@ class AnalyticsService {
 
     if (sortBy === 'rewards') {
       pipeline = [
-        { $match: { createdAt: { $gte: dates.currentStart, $lte: dates.currentEnd }, type: "REWARD", status: "COMPLETED" } },
+        { $match: { createdAt: { $gte: dates.currentStart, $lte: dates.currentEnd }, type: { $in: REWARD_TRANSACTION_TYPES }, status: WALLET_TRANSACTION_STATUS.SUCCESS } },
         { $group: { _id: "$company", totalValue: { $sum: "$amount" } } },
         { $sort: { totalValue: -1 } },
         { $limit: limitNum },

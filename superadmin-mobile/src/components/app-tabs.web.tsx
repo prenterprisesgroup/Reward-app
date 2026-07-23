@@ -13,7 +13,7 @@ import { ExternalLink } from './external-link';
 import { Typography } from './common/Typography';
 import { ThemedView } from './themed-view';
 
-import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+import { colors, Spacing, MaxContentWidth } from '@/constants/theme';
 
 export default function AppTabs() {
   return (
@@ -39,7 +39,7 @@ export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps
       <ThemedView
         type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
         style={styles.tabButtonView}>
-        <Typography type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
+        <Typography variant="caption" color={isFocused ? 'textPrimary' : 'textSecondary'}>
           {children}
         </Typography>
       </ThemedView>
@@ -48,13 +48,10 @@ export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps
 }
 
 export function CustomTabList(props: TabListProps) {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
-
   return (
     <View {...props} style={styles.tabListContainer}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
-        <Typography type="smallBold" style={styles.brandText}>
+        <Typography variant="title" style={styles.brandText}>
           Expo Starter
         </Typography>
 

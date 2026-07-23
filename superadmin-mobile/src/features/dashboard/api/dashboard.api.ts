@@ -12,21 +12,30 @@ export const dashboardApi = {
     return response.data;
   },
 
-  getRecentActivity: async (limit: number = 20, signal?: AbortSignal): Promise<RawActivityResponse> => {
+  getRecentActivity: async (page: number = 1, limit: number = 20, signal?: AbortSignal): Promise<RawActivityResponse> => {
     const response = await apiClient.get<RawActivityResponse>(ENDPOINTS.SUPER_ADMIN.GLOBAL_ACTIVITY, { 
-      params: { limit },
+      params: { page, limit },
       signal 
     });
     // analytics.controller returns { success, data: { pages: [...] }, meta }
     return (response.data as any).data;
   },
 
-  getPendingWithdrawals: async (signal?: AbortSignal): Promise<RawPendingWithdrawalsResponse> => {
-    // We only fetch first page with a reasonable limit for dashboard summary
+  getPendingWithdrawals: async (page: number = 1, limit: number = 10, signal?: AbortSignal): Promise<RawPendingWithdrawalsResponse> => {
     const response = await apiClient.get<RawPendingWithdrawalsResponse>(ENDPOINTS.SUPER_ADMIN.GLOBAL_WITHDRAWALS, {
-      params: { status: 'PENDING', page: 1, limit: 10 },
+      params: { status: 'PENDING', page, limit },
       signal
     });
+    return response.data;
+  },
+
+  approveWithdrawal: async (id: string) => {
+    const response = await apiClient.post(`/api/v1/admin/withdrawals/${id}/approve`, {});
+    return response.data;
+  },
+
+  rejectWithdrawal: async (id: string, reason: string) => {
+    const response = await apiClient.post(`/api/v1/admin/withdrawals/${id}/reject`, { reason });
     return response.data;
   }
 };

@@ -66,5 +66,6 @@ const barcodeBatchSchema = new mongoose.Schema(
 
 barcodeBatchSchema.index({ company: 1, createdAt: -1 });
 barcodeBatchSchema.index({ company: 1, status: 1 });
+barcodeBatchSchema.index({ createdAt: -1 }); // Supports global sorting
 
 module.exports = mongoose.model("BarcodeBatch", barcodeBatchSchema);

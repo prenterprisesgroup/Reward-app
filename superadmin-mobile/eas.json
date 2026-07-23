@@ -10,12 +10,18 @@
     "preview": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "env": {
+          "EXPO_PUBLIC_API_URL": "https://reward-app-ck2z.onrender.com"
+        }
       }
     },
     "production": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "env": {
+          "EXPO_PUBLIC_API_URL": "https://reward-app-ck2z.onrender.com"
+        }
       }
     }
   },

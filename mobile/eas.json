@@ -15,7 +15,8 @@
       "android": {
         "buildType": "apk",
         "env": {
-          "ANDROID_NDK_VERSION": "26.1.10909105"
+          "ANDROID_NDK_VERSION": "26.1.10909105",
+          "EXPO_PUBLIC_API_URL": "https://reward-app-ck2z.onrender.com"
         }
       }
     },

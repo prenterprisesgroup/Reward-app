@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-// Use live backend by default, fallback to local for development
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://reward-app-ck2z.onrender.com';
+// Use live backend for release builds, allow env override for local development
+const BASE_URL = (__DEV__ && process.env.EXPO_PUBLIC_API_URL)
+  ? process.env.EXPO_PUBLIC_API_URL
+  : 'https://reward-app-ck2z.onrender.com';
 
 console.log('[API] baseURL:', BASE_URL);
 
